@@ -177,6 +177,10 @@ Note: This is overridden by Version if both are set.
 
 ## Versions
 
+### 1.4.0.0
+
+* Changed to support SCOM 2016
+
 ### 1.3.3.0
 
 * Increased timeout for setup process to start to 60 seconds.
