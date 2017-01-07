@@ -112,6 +112,7 @@ Imports runbook(s) into an SMA instance. The Workflow name is expected to match 
 
 * Added MSI install logging
 * Fixed $IdentifyingNumber for System Center 2016 PS module install
+* Added missing -Port parameter argument when using SMA PS modules during install
 
 ### 1.5.0.0
 
