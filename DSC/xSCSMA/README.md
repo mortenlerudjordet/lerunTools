@@ -56,6 +56,9 @@ is used for installation of the SMA Web Service server, and has the following pr
 1: Opt in to Microsoft Update.
 * **ProductKey**: Product key for licensed installations.
 * **RunbookWorkerServers**: Array of Runbook Worker servers in this deployment.
+* **LogMSIinstall**: Controlls if MSI installation is logged {True | False}.
+* **MSIlogPath**: Path to put MSI logfile in.
+* **MsiLogName**: Name of MSI log file.
 
 ### xSCSMARunbookWorkerServerSetup
 
@@ -77,6 +80,9 @@ is used for installation of the SMA Web Service server, and has the following pr
 0: Do not opt in to Microsoft Update.
 1: Opt in to Microsoft Update.
 * **ProductKey**: Product key for licensed installations.
+* **LogMSIinstall**: Controlls if MSI installation is logged {True | False}.
+* **MSIlogPath**: Path to put MSI logfile in.
+* **MsiLogName**: Name of MSI log file.
 
 ### xRunbookDirectory
 Imports runbook(s) into an SMA instance. The Workflow name is expected to match the name of the ps1, and will become the name of the Runbooks.
