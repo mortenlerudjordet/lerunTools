@@ -73,11 +73,20 @@ function Get-TargetResource
         $ProductKey,
 
         [System.String[]]
-        $RunbookWorkerServers
+        $RunbookWorkerServers,
+
+        [System.String]
+        $LogMSIinstall = $False,
+
+        [System.String]
+        $MSIlogPath = $env:LOCALAPPDATA + "\SystemCenter2016\SMA",
+
+        [System.String]
+        $MsiLogName = "SMAinstall.log"
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "\SMA\WebServiceSetup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
@@ -235,11 +244,20 @@ function Set-TargetResource
         $ProductKey,
 
         [System.String[]]
-        $RunbookWorkerServers
+        $RunbookWorkerServers,
+
+        [System.String]
+        $LogMSIinstall = $False,
+
+        [System.String]
+        $MSIlogPath = $env:LOCALAPPDATA + "\SystemCenter2016\SMA",
+
+        [System.String]
+        $MsiLogName = "SMAinstall.log"
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "\SMA\WebServiceSetup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
@@ -307,6 +325,7 @@ function Set-TargetResource
 
             # Create install arguments
             $Arguments = "/q /i $MSIPath"
+
             if(($PSVersionTable.PSVersion.Major -eq 5) -and ($SCVersion -eq "System Center 2012 R2"))
             {
                 $MSTPath = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "\SMA\WMF5WebService.mst"
@@ -370,7 +389,25 @@ function Set-TargetResource
                 $Arguments += " $AccountVar`Account=`"" + (Get-Variable -Name $AccountVar).Value.UserName + "`""
                 $Arguments += " $AccountVar`Password=`"" + (Get-Variable -Name $AccountVar).Value.GetNetworkCredential().Password + "`""
             }
-            
+
+            # Check if logging is wanted
+            if($LogMSIinstall) {
+                # Create Path if not exist
+                $logPathName = Join-Path -Path $MSIlogPath -ChildPath $MSIlogName
+                If(!(Test-Path -Path $MSIlogPath))
+                {
+                    New-Item -ItemType Directory -Force -Path $MSIlogPath
+                }
+                Else {
+                    If(Test-Path -Path $logPathName) {
+                        # Remove logfile if exsists
+                        Remove-Item -Path $logPathName -Force
+                    }
+                }
+                Write-Verbose -Message "MSI logfile: $logPathName"
+                $Arguments += " /L*V ""$logPathName"""
+            }
+
             # Replace sensitive values for verbose output
             $Log = $Arguments
             $LogVars = @("ApPool")
@@ -381,6 +418,7 @@ function Set-TargetResource
                     $Log = $Log.Replace((Get-Variable -Name $LogVar).Value.GetNetworkCredential().Password,"********")
                 }
             }
+
         }
         "Absent"
         {
@@ -391,7 +429,7 @@ function Set-TargetResource
 
     Write-Verbose "Path: $Path"
     Write-Verbose "Arguments: $Log"
-    
+
     $Process = StartWin32Process -Path $Path -Arguments $Arguments -Credential $SetupCredential
     Write-Verbose $Process
     WaitForWin32ProcessEnd -Path $Path -Arguments $Arguments -Credential $SetupCredential
@@ -417,9 +455,8 @@ function Set-TargetResource
     }
     else
     {
-        Write-Verbose -Message "Testing TargetResource"	
-		Write-Verbose -Message "Parameters: "		
-		Write-Verbose -Message "Parameters: $($PSBoundParameters | Out-String)"	
+        Write-Verbose -Message "Testing TargetResource"
+		Write-Verbose -Message "Parameters: $($PSBoundParameters | Out-String)"
         if(!(Test-TargetResource @PSBoundParameters))
         {
             throw "Set-TargetResouce failed"
@@ -503,11 +540,20 @@ function Test-TargetResource
         $ProductKey,
 
         [System.String[]]
-        $RunbookWorkerServers
+        $RunbookWorkerServers,
+
+        [System.String]
+        $LogMSIinstall = $False,
+
+        [System.String]
+        $MSIlogPath = $env:LOCALAPPDATA + "\SystemCenter2016\SMA",
+
+        [System.String]
+        $MsiLogName = "SMAinstall.log"
     )
 
     $result = ((Get-TargetResource @PSBoundParameters).Ensure -eq $Ensure)
-    
+
     $result
 }
 

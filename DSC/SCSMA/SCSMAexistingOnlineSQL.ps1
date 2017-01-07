@@ -1,8 +1,11 @@
 ﻿#requires -Version 5
+# Installs SMA 2016
 
 $SecurePassword = ConvertTo-SecureString -String "********" -AsPlainText -Force
 $InstallerServiceAccount = New-Object System.Management.Automation.PSCredential ("domain\!Installer", $SecurePassword)
+$SecurePassword = ConvertTo-SecureString -String "Pass@word1" -AsPlainText -Force
 $SMAWorkerServiceAccount = New-Object System.Management.Automation.PSCredential ("domain\!sma", $SecurePassword)
+$SecurePassword = ConvertTo-SecureString -String "Pass@word1" -AsPlainText -Force
 $SMAAppPoolAccount = New-Object System.Management.Automation.PSCredential ("domain\!sma", $SecurePassword)
 
 $ConfigurationData = @{
@@ -13,7 +16,7 @@ $ConfigurationData = @{
             PSDscAllowDomainUser = $true
             # Default path in module is \SystemCenter2012R2\Orchestrator
             SourcePath = "\\SQL01\Software"
-            SourceFolder = "\SystemCenter2012R2\Orchestrator"
+            SourceFolder = "\SystemCenter2016\Orchestrator"
             InstallerServiceAccount = $InstallerServiceAccount
             ServiceAccount = $SMAWorkerServiceAccount
             ApPool = $SMAAppPoolAccount
@@ -22,18 +25,19 @@ $ConfigurationData = @{
             UseSSL = "Yes"
             # Certificate must be present in the Personal store on the machine
             SpecifyCertificate = "Yes"
+            # Must be the subject name of the certificate in the computer store
             CertificateName = "SMA"
             SqlServer = "SQL01.domain.info"
             SqlInstance = "MSSQLSERVER"
             SqlDatabase = "SMA"
             WebServicePort = "443"
-            
+
         }
         @{
-            NodeName = "Node01.domain.info"
+            NodeName = "Node02.domain.info"
             Roles = @(
-                "System Center 2012 R2 Service Management Automation Web Service Server",
-                "System Center 2012 R2 Service Management Automation Runbook Worker Server"
+                "System Center 2016 Service Management Automation Web Service Server",
+                "System Center 2016 Service Management Automation Runbook Worker Server"
             )
         }
     )
@@ -41,13 +45,13 @@ $ConfigurationData = @{
 
 Configuration SMA
 {
-    Import-DscResource -Module xSQLServer
+    #Import-DscResource -Module xSQLServer
     Import-DscResource -Module xSCSMA
     Import-DscResource -ModuleName PSDesiredStateConfiguration
 
     # Set role and instance variables
     # This code creates variables for each role to install with the names of the nodes in the,
-    # the var SystemCenter2012R2ServiceManagementAutomationWebServiceServers will have every server that has this role defined in it
+    # the var SystemCenter2016ServiceManagementAutomationWebServiceServers will have every server that has this role defined in it
     $Roles = $AllNodes.Roles | Sort-Object -Unique
     foreach($Role in $Roles)
     {
@@ -72,10 +76,10 @@ Configuration SMA
 
     Node $AllNodes.NodeName
     {
-       
+
         # Install .NET Framework 3.5 on SQL nodes
         if(
-            ($SystemCenter2012R2ServiceManagementAutomationDatabaseServer -eq $Node.NodeName) -or
+            ($SystemCenter2016ServiceManagementAutomationDatabaseServer -eq $Node.NodeName) -or
             ($SQLServer2012ManagementTools | Where-Object {$_ -eq $Node.NodeName})
         )
         {
@@ -89,7 +93,7 @@ Configuration SMA
 
         # Install IIS on Web Service servers
         if(
-            ($SystemCenter2012R2ServiceManagementAutomationWebServiceServers  | Where-Object {$_ -eq $Node.NodeName})
+            ($SystemCenter2016ServiceManagementAutomationWebServiceServers  | Where-Object {$_ -eq $Node.NodeName})
         )
         {
             WindowsFeature "Web-WebServer"
@@ -137,7 +141,7 @@ Configuration SMA
         <#
         # Install SQL Instances
         if(
-            ($SystemCenter2012R2ServiceManagementAutomationDatabaseServer -eq $Node.NodeName)
+            ($SystemCenter2016ServiceManagementAutomationDatabaseServer -eq $Node.NodeName)
         )
         {
             foreach($SQLServer in $Node.SQLServers)
@@ -147,8 +151,8 @@ Configuration SMA
                 $Features = ""
                 if(
                     (
-                        ($SystemCenter2012R2ServiceManagementAutomationDatabaseServer -eq $Node.NodeName) -and
-                        ($SystemCenter2012R2ServiceManagementAutomationDatabaseInstance -eq $SQLInstanceName)
+                        ($SystemCenter2016ServiceManagementAutomationDatabaseServer -eq $Node.NodeName) -and
+                        ($SystemCenter2016ServiceManagementAutomationDatabaseInstance -eq $SQLInstanceName)
                     )
                 )
                 {
@@ -195,35 +199,36 @@ Configuration SMA
 
         # Install SMA PowerShell on all SMA roles
         if(
-            ($SystemCenter2012R2ServiceManagementAutomationWebServiceServers  | Where-Object {$_ -eq $Node.NodeName}) -or
-            ($SystemCenter2012R2ServiceManagementAutomationRunbookWorkerServers  | Where-Object {$_ -eq $Node.NodeName})
+            ($SystemCenter2016ServiceManagementAutomationWebServiceServers  | Where-Object {$_ -eq $Node.NodeName}) -or
+            ($SystemCenter2016ServiceManagementAutomationRunbookWorkerServers  | Where-Object {$_ -eq $Node.NodeName})
         )
         {
             xSCSMAPowerShellSetup "SMAPS"
             {
                 Ensure = "Present"
                 SourcePath = $Node.SourcePath
+                SourceFolder = $Node.SourceFolder
                 SetupCredential = $Node.InstallerServiceAccount
             }
         }
 
         # Install first Web Service Server
-        if ($SystemCenter2012R2ServiceManagementAutomationWebServiceServers[0] -eq $Node.NodeName)
+        if ($SystemCenter2016ServiceManagementAutomationWebServiceServers[0] -eq $Node.NodeName)
         {
             # Create DependsOn for first Web Service Server
             $DependsOn = @()
             <#
             # Wait for Operations SQL Server
-            if ($SystemCenter2012R2ServiceManagementAutomationWebServiceServers[0] -eq $SystemCenter2012R2ServiceManagementAutomationDatabaseServer)
+            if ($SystemCenter2016ServiceManagementAutomationWebServiceServers[0] -eq $SystemCenter2016ServiceManagementAutomationDatabaseServer)
             {
-                $DependsOn += @(("[xSqlServerFirewall]" + $SystemCenter2012R2ServiceManagementAutomationDatabaseServer + $SystemCenter2012R2ServiceManagementAutomationDatabaseInstance))
+                $DependsOn += @(("[xSqlServerFirewall]" + $SystemCenter2016ServiceManagementAutomationDatabaseServer + $SystemCenter2016ServiceManagementAutomationDatabaseInstance))
             }
             else
             {
                 WaitForAll "SMADB"
                 {
-                    NodeName = $SystemCenter2012R2ServiceManagementAutomationDatabaseServer
-                    ResourceName = ("[xSqlServerFirewall]" + $SystemCenter2012R2ServiceManagementAutomationDatabaseServer + $SystemCenter2012R2ServiceManagementAutomationDatabaseInstance)
+                    NodeName = $SystemCenter2016ServiceManagementAutomationDatabaseServer
+                    ResourceName = ("[xSqlServerFirewall]" + $SystemCenter2016ServiceManagementAutomationDatabaseServer + $SystemCenter2016ServiceManagementAutomationDatabaseInstance)
                     PsDscRunAsCredential = $Node.InstallerServiceAccount
                     RetryCount = 720
                     RetryIntervalSec = 5
@@ -245,7 +250,7 @@ Configuration SMA
                 SqlServer = "SQL01.domain.info"
                 SqlInstance = "MSSQLSERVER"
                 SqlDatabase = $Node.SqlDatabase
-                RunbookWorkerServers = $SystemCenter2012R2ServiceManagementAutomationRunbookWorkerServers
+                RunbookWorkerServers = $SystemCenter2016ServiceManagementAutomationRunbookWorkerServers
                 WebServicePort = $Node.WebServicePort
                 SiteName = $Node.SiteName
                 UseSSL = $Node.UseSSL
@@ -258,15 +263,15 @@ Configuration SMA
         # Wait for first Web Service server on other Web Service servers and Runbook Worker server
         if(
             (
-                ($SystemCenter2012R2ServiceManagementAutomationWebServiceServers | Where-Object {$_ -eq $Node.NodeName}) -or
-                ($SystemCenter2012R2ServiceManagementAutomationRunbookWorkerServers | Where-Object {$_ -eq $Node.NodeName})
+                ($SystemCenter2016ServiceManagementAutomationWebServiceServers | Where-Object {$_ -eq $Node.NodeName}) -or
+                ($SystemCenter2016ServiceManagementAutomationRunbookWorkerServers | Where-Object {$_ -eq $Node.NodeName})
             ) -and
-            (!($SystemCenter2012R2ServiceManagementAutomationWebServiceServers[0] -eq $Node.NodeName))
+            (!($SystemCenter2016ServiceManagementAutomationWebServiceServers[0] -eq $Node.NodeName))
         )
         {
             WaitForAll "SMAWS"
             {
-                NodeName = $SystemCenter2012R2ServiceManagementAutomationWebServiceServers[0]
+                NodeName = $SystemCenter2016ServiceManagementAutomationWebServiceServers[0]
                 ResourceName = "[xSCSMAWebServiceServerSetup]SMAWS"
                 RetryIntervalSec = 5
                 RetryCount = 720
@@ -276,8 +281,8 @@ Configuration SMA
 
         # Install additional Web Service servers
         if(
-            ($SystemCenter2012R2ServiceManagementAutomationWebServiceServers | Where-Object {$_ -eq $Node.NodeName}) -and
-            (!($SystemCenter2012R2ServiceManagementAutomationWebServiceServers[0] -eq $Node.NodeName))
+            ($SystemCenter2016ServiceManagementAutomationWebServiceServers | Where-Object {$_ -eq $Node.NodeName}) -and
+            (!($SystemCenter2016ServiceManagementAutomationWebServiceServers[0] -eq $Node.NodeName))
         )
         {
             xSCSMAWebServiceServerSetup "SMAWS"
@@ -299,16 +304,16 @@ Configuration SMA
                 SpecifyCertificate = $Node.SpecifyCertificate
                 CertificateName = $Node.CertificateName
                 ProductKey = $Node.SystemCenterProductKey
-
+                LogMSIinstall = $True
             }
         }
 
         # Install Runbook Worker servers
-        if($SystemCenter2012R2ServiceManagementAutomationRunbookWorkerServers | Where-Object {$_ -eq $Node.NodeName})
+        if($SystemCenter2016ServiceManagementAutomationRunbookWorkerServers | Where-Object {$_ -eq $Node.NodeName})
         {
-            # If this is the first Web Service server, depend on that
+            # If this is the first worker server, depend on that
             # otherwise wait for that
-            if($SystemCenter2012R2ServiceManagementAutomationWebServiceServers[0] -eq $Node.NodeName)
+            if($SystemCenter2016ServiceManagementAutomationWebServiceServers[0] -eq $Node.NodeName)
             {
                 $DependsOn = "[xSCSMAWebServiceServerSetup]SMAWS"
             }
@@ -328,6 +333,7 @@ Configuration SMA
                 SqlServer = "SQL01.domain.info"
                 SqlInstance = "MSSQLSERVER"
                 SqlDatabase = $Node.SqlDatabase
+                LogMSIinstall = $True
             }
         }
     }
