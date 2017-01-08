@@ -31,10 +31,11 @@ function Get-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
+    Write-Verbose -Message "Checking for version: $Version"
 
     switch($Version)
     {
@@ -46,13 +47,18 @@ function Get-TargetResource
         {
             $IdentifyingNumber = "{CDFB453F-5FA4-4884-B282-F46BDFC06051}"
         }
+        "4.0.1662.0"
+        {
+            # System Center 2016 RTM
+            $IdentifyingNumber = "{B703D43A-ABF6-4A36-84CC-00D77FF8570B}"
+        }
         Default
         {
             throw "Unknown version of Virtual Machine Manager!"
         }
     }
 
-    if(Get-WmiObject -Class Win32_Product | Where-Object {$_.IdentifyingNumber -eq $IdentifyingNumber})
+    if(Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber ='$IdentifyingNumber'")
     {
         $IndigoTcpPort = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft System Center Virtual Machine Manager Administrator Console\Settings" -Name "IndigoTcpPort").IndigoTcpPort
 
@@ -108,11 +114,12 @@ function Set-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
     Write-Verbose "Path: $Path"
+    Write-Verbose -Message "Checking for version: $Version"
 
     switch($Version)
     {
@@ -125,6 +132,12 @@ function Set-TargetResource
         {
             $IdentifyingNumber = "{CDFB453F-5FA4-4884-B282-F46BDFC06051}"
             $MSIdentifyingNumber = "{59518B15-FC64-4CF9-A4D1-0EE1B4A63088}"
+        }
+        "4.0.1662.0"
+        {
+            # System Center 2016 RTM
+            $IdentifyingNumber = "{B703D43A-ABF6-4A36-84CC-00D77FF8570B}"
+            $MSIdentifyingNumber = "{B1A70E2C-46E1-4776-8131-DD523C7DFEA5}"
         }
         Default
         {
@@ -180,7 +193,7 @@ function Set-TargetResource
         "Absent"
         {
             # Do not remove console from management server
-            if(!(Get-WmiObject -Class Win32_Product | Where-Object {$_.IdentifyingNumber -eq $MSIdentifyingNumber}))
+            if(!(Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber ='$IdentifyingNumber'"))
             {
                 # Create install arguments
                 $Arguments = "/x /client"
@@ -193,7 +206,7 @@ function Set-TargetResource
     }
 
     Write-Verbose "Arguments: $Arguments"
-    
+
     $Process = StartWin32Process -Path $Path -Arguments $Arguments -Credential $SetupCredential -AsTask
     Write-Verbose $Process
     WaitForWin32ProcessEnd -Path $Path -Arguments $Arguments -Credential $SetupCredential
@@ -251,7 +264,7 @@ function Test-TargetResource
     )
 
     $result = ((Get-TargetResource @PSBoundParameters).Ensure -eq $Ensure)
-    
+
     $result
 }
 

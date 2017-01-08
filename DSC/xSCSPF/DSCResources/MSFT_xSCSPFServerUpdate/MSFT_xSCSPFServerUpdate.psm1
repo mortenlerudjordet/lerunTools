@@ -20,9 +20,10 @@ function Get-TargetResource
         [System.Management.Automation.PSCredential]
         $SetupCredential
     )
-   
+
     $Version = (Get-WmiObject -Class Win32_Product | Where-Object {$_.Name -like "System Center * Service Provider Foundation MSI"}).Version
-    
+    Write-Verbose -Message "Set-TargetResource: Checking for supported upgrades for version: $Version"
+
     switch($Version)
     {
         "7.2.1902.0"
@@ -99,6 +100,7 @@ function Set-TargetResource
     )
 
     $Version = (Get-WmiObject -Class Win32_Product | Where-Object {$_.Name -like "System Center * Service Provider Foundation MSI"}).Version
+    Write-Verbose -Message "Set-TargetResource: Checking for supported upgrades for version: $Version"
 
     switch($Version)
     {
@@ -126,7 +128,7 @@ function Set-TargetResource
         $Path = "msiexec.exe"
         $Path = ResolvePath $Path
         Write-Verbose "Path: $Path"
-    
+
         $MSPPath = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath $UpdateFile
         $MSPPath = ResolvePath $MSPPath
         $Arguments = "/update $MSPPath"
@@ -175,7 +177,7 @@ function Test-TargetResource
     )
 
     $result = ((Get-TargetResource @PSBoundParameters).Ensure -eq $Ensure)
-    
+
     $result
 }
 

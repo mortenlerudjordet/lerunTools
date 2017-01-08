@@ -52,11 +52,11 @@ function Get-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
-
+    Write-Verbose -Message "Checking for version: $Version"
     switch($Version)
     {
         "7.1.10226.0"
@@ -69,7 +69,7 @@ function Get-TargetResource
             $IdentifyingNumber = "{676EB643-C22A-4EEC-A8CF-13A0719056A5}"
             $InstallRegVersion = "12"
             $RegVersion = "3.0"
-        }        
+        }
         Default
         {
             throw "Unknown version of Operations Manager!"
@@ -98,7 +98,7 @@ function Get-TargetResource
             SourceFolder = $SourceFolder
         }
     }
-    
+
     $returnValue
 }
 
@@ -156,11 +156,11 @@ function Set-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
-
+    Write-Verbose -Message "Checking for version: $Version"
     switch($Version)
     {
         "7.1.10226.0"
@@ -235,7 +235,7 @@ function Set-TargetResource
 
     Write-Verbose "Path: $Path"
     Write-Verbose "Arguments: $Arguments"
-    
+
     $Process = StartWin32Process -Path $Path -Arguments $Arguments -Credential $SetupCredential -AsTask
     Write-Verbose $Process
     WaitForWin32ProcessEnd -Path $Path -Arguments $Arguments -Credential $SetupCredential
@@ -308,7 +308,7 @@ function Test-TargetResource
     )
 
     $result = ((Get-TargetResource @PSBoundParameters).Ensure -eq $Ensure)
-    
+
     $result
 }
 

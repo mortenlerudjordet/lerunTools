@@ -26,7 +26,7 @@ function Get-TargetResource
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "\SetupOrchestrator.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
-
+    Write-Verbose -Message "Checking for version: $Version"
     switch($Version)
     {
         "7.2.84.0"
@@ -101,7 +101,7 @@ function Set-TargetResource
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "\SetupOrchestrator.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
-
+    Write-Verbose -Message "Checking for version: $Version"
     switch($Version)
     {
         "7.2.84.0"

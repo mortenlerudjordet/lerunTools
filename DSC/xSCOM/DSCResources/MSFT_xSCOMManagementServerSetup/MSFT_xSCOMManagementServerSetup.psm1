@@ -86,10 +86,11 @@ function Get-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
+    Write-Verbose -Message "Set-TargetResource: Checking for supported upgrades for version: $Version"
 
     switch($Version)
     {
@@ -169,7 +170,7 @@ function Get-TargetResource
             SourceFolder = $SourceFolder
         }
     }
-    
+
     $returnValue
 }
 
@@ -261,11 +262,12 @@ function Set-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
-    Write-Verbose -Message "Set-TargetResource: Checking for supported version"
+    Write-Verbose -Message "Set-TargetResource: Checking for supported upgrades for version: $Version"
+
     switch($Version)
     {
         "7.1.10226.0"
@@ -363,7 +365,7 @@ function Set-TargetResource
                     }
                 }
             }
-            
+
             # Replace sensitive values for verbose output
             $Log = $Arguments
             $LogVars = @("ActionAccount","DASAccount","DataReader","DataWriter")
@@ -385,17 +387,17 @@ function Set-TargetResource
 
     Write-Verbose "Path: $Path"
     Write-Verbose "Arguments: $Log"
-    
+
     $Process = StartWin32Process -Path $Path -Arguments $Arguments -Credential $SetupCredential -AsTask
     Write-Verbose $Process
     Write-Verbose -Message "Set-TargetResource: Waiting for WaitForWin32ProcessEnd"
     WaitForWin32ProcessEnd -Path $Path -Arguments $Arguments -Credential $SetupCredential
-    
-    
+
+
     # Additional first Management Server "Present" actions
     if(($Ensure -eq "Present") -and $FirstManagementServer -and (Get-WmiObject -Class Win32_Product | Where-Object {$_.IdentifyingNumber -eq $IdentifyingNumber}))
     {
-        
+
         # Set ProductKey
         if($PSBoundParameters.ContainsKey("ProductKey"))
         {
@@ -539,7 +541,7 @@ function Test-TargetResource
     )
 
     $result = ((Get-TargetResource @PSBoundParameters).Ensure -eq $Ensure)
-    
+
     $result
 }
 

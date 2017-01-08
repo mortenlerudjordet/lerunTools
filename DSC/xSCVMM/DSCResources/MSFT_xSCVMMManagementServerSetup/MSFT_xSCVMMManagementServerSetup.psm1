@@ -108,10 +108,11 @@ function Get-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
+    Write-Verbose -Message "Checking for version: $Version"
 
     switch($Version)
     {
@@ -123,15 +124,20 @@ function Get-TargetResource
         {
             $IdentifyingNumber = "{59518B15-FC64-4CF9-A4D1-0EE1B4A63088}"
         }
+        "4.0.1662.0"
+        {
+            # System Center 2016 RTM
+            $IdentifyingNumber = "{B703D43A-ABF6-4A36-84CC-00D77FF8570B}"
+        }
         Default
         {
             throw "Unknown version of Virtual Machine Manager!"
         }
     }
 
-    if(Get-WmiObject -Class Win32_Product | Where-Object {$_.IdentifyingNumber -eq $IdentifyingNumber})
+    if(Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber ='$IdentifyingNumber'")
     {
-        $vmmServiceUsername = (Get-WmiObject -Class Win32_Service | Where-Object {$_.Name -eq "SCVMMService"}).StartName
+        $vmmServiceUsername = (Get-WmiObject -Class Win32_Service -Filter "Name = SCVMMService").StartName
         $UserName = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft System Center Virtual Machine Manager Server\Setup\Registration" -Name "UserName").UserName
         $CompanyName = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft System Center Virtual Machine Manager Server\Setup\Registration" -Name "CompanyName").CompanyName
         $ProgramFiles = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft System Center Virtual Machine Manager Server\Setup" -Name "InstallPath").InstallPath
@@ -296,10 +302,11 @@ function Set-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "setup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
+    Write-Verbose -Message "Checking for version: $Version"
 
     switch($Version)
     {
@@ -310,6 +317,11 @@ function Set-TargetResource
         "3.2.9013.0"
         {
             $IdentifyingNumber = "{59518B15-FC64-4CF9-A4D1-0EE1B4A63088}"
+        }
+        "4.0.1662.0"
+        {
+            # System Center 2016 RTM
+            $IdentifyingNumber = "{B703D43A-ABF6-4A36-84CC-00D77FF8570B}"
         }
         Default
         {
@@ -413,7 +425,7 @@ function Set-TargetResource
                     $INIFile += "HighlyAvailable2ndNode=1"
                 }
             }
-            else 
+            else
             {
                 $INIFileVars += @(
                     "CreateNewLibraryShare",
@@ -485,7 +497,7 @@ function Set-TargetResource
     }
 
     Write-Verbose "Arguments: $Log"
-    
+
     $Process = StartWin32Process -Path $Path -Arguments $Arguments -Credential $SetupCredential -AsTask
     Write-Verbose $Process
     WaitForWin32ProcessEnd -Path $Path -Arguments $Arguments -Credential $SetupCredential
@@ -620,7 +632,7 @@ function Test-TargetResource
     )
 
     $result = ((Get-TargetResource @PSBoundParameters).Ensure -eq $Ensure)
-    
+
     $result
 }
 

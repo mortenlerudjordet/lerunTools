@@ -1,5 +1,5 @@
 #requires -Version 5
-
+# SPF 2016
 $SecurePassword = ConvertTo-SecureString -String "********" -AsPlainText -Force
 $InstallerServiceAccount = New-Object System.Management.Automation.PSCredential ("domain\!Installer", $SecurePassword)
 $SecurePassword = ConvertTo-SecureString -String "********" -AsPlainText -Force
@@ -20,8 +20,8 @@ $ConfigurationData = @{
             PSDscAllowPlainTextPassword = $true
             PSDscAllowDomainUser = $true
             SourcePath = "\\SQL01\Software"
-            SourceFolder = "\SystemCenter2012R2\Orchestrator"
-            SCVMMSourcePath = "\SystemCenter2012R2\VirtualMachineManager"
+            SourceFolder = "\SystemCenter2016\Orchestrator"
+            SCVMMSourcePath = "\SystemCenter2016\VirtualMachineManager"
             InstallerServiceAccount = $InstallerServiceAccount
             SPFServiceAccount = $SPFServiceAccount
             SCVMM = $SCVMMServiceAccount
@@ -38,11 +38,11 @@ $ConfigurationData = @{
             WebSitePortNumber = "443"
             SCVMMConsolePort = "8100"
             SpecifyCertificate = $True
-            CertificateName = "SPF"            
+            CertificateName = "SPF"
         }
         @{
             NodeName = "Node01.domain.info"
-            Roles = @("System Center 2012 R2 Service Provider Foundation Server")
+            Roles = @("System Center 2016 Service Provider Foundation Server")
         }
     )
 }
@@ -82,7 +82,7 @@ Configuration SPF
 
         # Install .NET 3.5 Framework
         if(
-            ($SystemCenter2012R2ServiceProviderFoundationDatabaseServer -eq $Node.NodeName) -or
+            ($SystemCenter2016ServiceProviderFoundationDatabaseServer -eq $Node.NodeName) -or
             ($SQLServer2012ManagementTools | Where-Object {$_ -eq $Node.NodeName})
         )
         {
@@ -90,13 +90,13 @@ Configuration SPF
             {
                 Ensure = "Present"
                 Name = "NET-Framework-Core"
-                Source = $Node.SourcePath + "\WindowsServer2012R2\sources\sxs"
+                Source = $Node.SourcePath + "\WindowsServer2016\sources\sxs"
             }
         }
 
         # Install IIS on Web Service servers
         if(
-            ($SystemCenter2012R2ServiceProviderFoundationServers  | Where-Object {$_ -eq $Node.NodeName})
+            ($SystemCenter2016ServiceProviderFoundationServers  | Where-Object {$_ -eq $Node.NodeName})
         )
         {
             WindowsFeature "Web-WebServer"
@@ -162,7 +162,7 @@ Configuration SPF
         <#
         # Install SQL Instances
         if(
-            ($SystemCenter2012R2ServiceProviderFoundationDatabaseServer -eq $Node.NodeName)
+            ($SystemCenter2016ServiceProviderFoundationDatabaseServer -eq $Node.NodeName)
         )
         {
             foreach($SQLServer in $Node.SQLServers)
@@ -172,8 +172,8 @@ Configuration SPF
                 $Features = ""
                 if(
                     (
-                        ($SystemCenter2012R2ServiceProviderFoundationDatabaseServer -eq $Node.NodeName) -and
-                        ($SystemCenter2012R2ServiceProviderFoundationDatabaseInstance -eq $SQLInstanceName)
+                        ($SystemCenter2016ServiceProviderFoundationDatabaseServer -eq $Node.NodeName) -and
+                        ($SystemCenter2016ServiceProviderFoundationDatabaseInstance -eq $SQLInstanceName)
                     )
                 )
                 {
@@ -219,7 +219,7 @@ Configuration SPF
         }
 
         # Install SPF prerequisites
-        if($SystemCenter2012R2ServiceProviderFoundationServers | Where-Object {$_ -eq $Node.NodeName})
+        if($SystemCenter2016ServiceProviderFoundationServers | Where-Object {$_ -eq $Node.NodeName})
         {
             if($Node.ASPNETMVC4)
             {
@@ -275,20 +275,20 @@ Configuration SPF
         )
 
         # Install first Server
-        if ($SystemCenter2012R2ServiceProviderFoundationServers[0] -eq $Node.NodeName)
+        if ($SystemCenter2016ServiceProviderFoundationServers[0] -eq $Node.NodeName)
         {
             <#
             # Wait for  SQL Server
-            if ($SystemCenter2012R2ServiceProviderFoundationServers[0] -eq $SystemCenter2012R2ServiceProviderFoundationDatabaseServer)
+            if ($SystemCenter2016ServiceProviderFoundationServers[0] -eq $SystemCenter2016ServiceProviderFoundationDatabaseServer)
             {
-                $DependsOn += @(("[xSqlServerFirewall]" + $SystemCenter2012R2ServiceProviderFoundationDatabaseServer + $SystemCenter2012R2ServiceProviderFoundationDatabaseInstance))
+                $DependsOn += @(("[xSqlServerFirewall]" + $SystemCenter2016ServiceProviderFoundationDatabaseServer + $SystemCenter2016ServiceProviderFoundationDatabaseInstance))
             }
             else
             {
                 WaitForAll "SPFDB"
                 {
-                    NodeName = $SystemCenter2012R2ServiceProviderFoundationDatabaseServer
-                    ResourceName = ("[xSqlServerFirewall]" + $SystemCenter2012R2ServiceProviderFoundationDatabaseServer + $SystemCenter2012R2ServiceProviderFoundationDatabaseInstance)
+                    NodeName = $SystemCenter2016ServiceProviderFoundationDatabaseServer
+                    ResourceName = ("[xSqlServerFirewall]" + $SystemCenter2016ServiceProviderFoundationDatabaseServer + $SystemCenter2016ServiceProviderFoundationDatabaseInstance)
                     PsDscRunAsCredential = $Node.InstallerServiceAccount
                     RetryCount = 720
                     RetryIntervalSec = 5
@@ -324,13 +324,13 @@ Configuration SPF
 
         # Wait for first server
         if(
-            ($SystemCenter2012R2ServiceProviderFoundationServers | Where-Object {$_ -eq $Node.NodeName}) -and
-            (!($SystemCenter2012R2ServiceProviderFoundationServers[0] -eq $Node.NodeName))
+            ($SystemCenter2016ServiceProviderFoundationServers | Where-Object {$_ -eq $Node.NodeName}) -and
+            (!($SystemCenter2016ServiceProviderFoundationServers[0] -eq $Node.NodeName))
         )
         {
             WaitForAll "SPF"
             {
-                NodeName = $SystemCenter2012R2ServiceProviderFoundationServers[0]
+                NodeName = $SystemCenter2016ServiceProviderFoundationServers[0]
                 ResourceName = "[xSCSPFServerSetup]SPF"
                 RetryIntervalSec = 5
                 RetryCount = 720
@@ -341,8 +341,8 @@ Configuration SPF
 
         # Install additional servers
         if(
-            ($SystemCenter2012R2ServiceProviderFoundationServers | Where-Object {$_ -eq $Node.NodeName}) -and
-            (!($SystemCenter2012R2ServiceProviderFoundationServers[0] -eq $Node.NodeName))
+            ($SystemCenter2016ServiceProviderFoundationServers | Where-Object {$_ -eq $Node.NodeName}) -and
+            (!($SystemCenter2016ServiceProviderFoundationServers[0] -eq $Node.NodeName))
         )
         {
             xSCSPFServerSetup "SPF"

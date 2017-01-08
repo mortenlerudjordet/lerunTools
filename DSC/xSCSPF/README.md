@@ -14,11 +14,11 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **xSCSPFServerSetup** installs the SPF server.
 * **xSCSPFServerUpdate** updates an SPF server to Update Rollup 4.
 * **xSCSPFSetting** adds setting in SPF.
-* **xSCSPFStamp** adds a stamp in SPF. 
+* **xSCSPFStamp** adds a stamp in SPF.
 
 ### xSCSPFServer
 
-* **Ensure**: Ensures that an SPF server is **Absent** or **Present**. 
+* **Ensure**: Ensures that an SPF server is **Absent** or **Present**.
 * **Name**: (Key) The desired name of the server.
 * **ServerType**: (Required) Specifies the type of server: { VMM | OM | DPM | OMDW | RDGateway | Orchestrator | None }
 * **SCSPFAdminCredential**: (Required) Credential with admin permissions to Service Provider Foundation.
@@ -29,11 +29,11 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **SourcePath**: (Required) UNC path to the root of the source files for installation.
 * **SourceFolder**: Folder within the source path containing the source files for installation.
 * **SetupCredential**: (Required) Credential to be used to perform the installation.
-* **UseMicrosoftUpdate**: { 0 | 1 } 
-0: Do not opt in to Microsoft Update. 
+* **UseMicrosoftUpdate**: { 0 | 1 }
+0: Do not opt in to Microsoft Update.
 1: Opt in to Microsoft Update.
-* **SendCEIPReports**: { 0 | 1 } 
-0: Do not opt in to the Customer Experience Improvement Program (CEIP). 
+* **SendCEIPReports**: { 0 | 1 }
+0: Do not opt in to the Customer Experience Improvement Program (CEIP).
 1: Opt in to CEIP.
 * **SpecifyCertificate**: Use an existing certificate.
 * **CertificateName**: Name of existing certificate to use.
@@ -56,7 +56,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ### xSCSPFServerUpdate
 
-* **Ensure**: (Key) Ensures that the xSCSPF update is **Present** or **Absent** on the machine. 
+* **Ensure**: (Key) Ensures that the xSCSPF update is **Present** or **Absent** on the machine.
 * **SourcePath**: (Required) UNC path to the root of the source files for installation.
 * **SourceFolder**: Folder within the source path containing the source files for installation.
 * **Credential**: (Required) Credential to be used to perform the installation.
@@ -64,12 +64,12 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 **xSCSPFSetting** has the following properties:
 
-* **Ensure**: Ensures that the SPF setting is **Present** or **Absent** on the machine. 
+* **Ensure**: Ensures that the SPF setting is **Present** or **Absent** on the machine.
 * **ServerName**: (Key) Name of the server the setting is associated with.
 * **SettingType**: (Required) { DatabaseConnectionString | EndPointConnectionString }
 * **Name**: (Key) Friendly name for the setting.
 * **Value**: (Required) Value for the setting.
-* **SCSPFAdminCredential**: (Required) Credential with admin permissions to SPF. 
+* **SCSPFAdminCredential**: (Required) Credential with admin permissions to SPF.
 
 **xSCSPFStamp** has the following properties:
 
@@ -80,6 +80,11 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 
 ## Versions
+
+### 1.3.2.0
+
+* Set correct IdentifyingNumber for SPF 2016
+* Added more verbose logging
 
 ### 1.3.1.0
 
@@ -100,7 +105,7 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 
 ## Examples
 
-Three example configurations are included in the Examples folder. 
+Three example configurations are included in the Examples folder.
 All three examples also use the **xSQLServer** and **xSCVMM** modules.
 
 ### Single Server Installation
@@ -114,11 +119,11 @@ SCSPF-SeperateSQL.ps1 installs SPF on one server and SQL on a separate server.
 ### Multiple Instances
 SCSPF-MultiInstance.ps1 installs multiple SPF servers each on their own server and SQL on a separate server.
 
-Notes: 
+Notes:
 
 The samples require the use of [Windows Management Framework (WMF) 5.0 Preview](http://go.microsoft.com/fwlink/?LinkId=398175).
 
 All three examples use the exact same Configuration and just modify the behavior based on input ConfigurationData.
 
-In the Examples folder you will see a version of each file with "-TP" appended to the name. 
+In the Examples folder you will see a version of each file with "-TP" appended to the name.
 These are the equivalent examples for deployment of System Center Technical Preview on Windows Server Technical Preview.

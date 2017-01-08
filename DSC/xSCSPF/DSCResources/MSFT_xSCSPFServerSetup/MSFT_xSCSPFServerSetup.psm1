@@ -47,13 +47,13 @@ function Get-TargetResource
 
         [System.Management.Automation.PSCredential]
         $SCVMM,
-        
+
         [System.Management.Automation.PSCredential]
         $SCAdmin = $SCVMM,
-        
+
         [System.Management.Automation.PSCredential]
         $SCProvider = $SCVMM,
-        
+
         [System.Management.Automation.PSCredential]
         $SCUsage = $SCVMM,
 
@@ -71,10 +71,11 @@ function Get-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "\SPF\setup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
+    Write-Verbose -Message "Checking for version: $Version"
 
     switch($Version)
     {
@@ -98,10 +99,10 @@ function Get-TargetResource
         }
     }
 
-    if(Get-WmiObject -Class Win32_Product | Where-Object {$_.IdentifyingNumber -eq $IdentifyingNumber})
+    if(Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber ='$IdentifyingNumber'")
     {
         $DatabaseServer = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Service Provider Foundation" -Name "DatabaseServer").DatabaseServer
-        
+
         $DatabasePort = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Service Provider Foundation" -Name "DatabasePort").DatabasePort
         if($DatabasePort -eq -1)
         {
@@ -168,7 +169,7 @@ function Get-TargetResource
             SourceFolder = $SourceFolder
         }
     }
-        
+
     $returnValue
 }
 
@@ -221,13 +222,13 @@ function Set-TargetResource
 
         [System.Management.Automation.PSCredential]
         $SCVMM,
-        
+
         [System.Management.Automation.PSCredential]
         $SCAdmin = $SCVMM,
-        
+
         [System.Management.Automation.PSCredential]
         $SCProvider = $SCVMM,
-        
+
         [System.Management.Automation.PSCredential]
         $SCUsage = $SCVMM,
 
@@ -245,11 +246,12 @@ function Set-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\xPDT.psm1
-        
+
     $Path = Join-Path -Path (Join-Path -Path $SourcePath -ChildPath $SourceFolder) -ChildPath "\SPF\setup.exe"
     $Path = ResolvePath $Path
     $Version = (Get-Item -Path $Path).VersionInfo.ProductVersion
     Write-Verbose "Path: $Path"
+    Write-Verbose -Message "Checking for version: $Version"
 
     switch($Version)
     {
@@ -266,7 +268,7 @@ function Set-TargetResource
             # System Center 2016 RTM
             # Check for correct IdentifyingNumber
             $IdentifyingNumber = "{69344E86-7183-4384-A230-499E9914BE14}"
-        }        
+        }
         Default
         {
             throw "Unknown version of Service Provider Foundation!"
@@ -365,13 +367,13 @@ function Set-TargetResource
     }
 
     Write-Verbose "Arguments: $Arguments"
-    
+
     $Process = StartWin32Process -Path $Path -Arguments $Arguments -Credential $SetupCredential
     Write-Verbose $Process
     WaitForWin32ProcessEnd -Path $Path -Arguments $Arguments -Credential $SetupCredential
 
     # Add admins to groups
-    if(($Ensure -eq "Present") -and (Get-WmiObject -Class Win32_Product | Where-Object {$_.IdentifyingNumber -eq "$IdentifyingNumber"}))
+    if(($Ensure -eq "Present") -and (Get-WmiObject -Class Win32_Product -Filter "IdentifyingNumber ='$IdentifyingNumber'"))
     {
         $SPFGroups = @("VMM","Admin","Provider","Usage")
         foreach($SPFGroup in $SPFGroups)
@@ -476,13 +478,13 @@ function Test-TargetResource
 
         [System.Management.Automation.PSCredential]
         $SCVMM,
-        
+
         [System.Management.Automation.PSCredential]
         $SCAdmin = $SCVMM,
-        
+
         [System.Management.Automation.PSCredential]
         $SCProvider = $SCVMM,
-        
+
         [System.Management.Automation.PSCredential]
         $SCUsage = $SCVMM,
 
@@ -500,7 +502,7 @@ function Test-TargetResource
     )
 
     $result = ((Get-TargetResource @PSBoundParameters).Ensure -eq $Ensure)
-    
+
     $result
 }
 
