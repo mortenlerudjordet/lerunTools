@@ -26,7 +26,7 @@ $ConfigurationData = @{
             CreateVMMDB                                         = 1
             SqlServer                                           = "SQL01.domain.info"
             SqlInstance                                         = "MSSQLSERVER"
-            SqlDatabase                                         = "OperationsManager"
+            SqlDatabase                                         = "VirtualManagerDB"
             CreateNewLibraryShare                               = 1
             LibraryShareName                                    = ""
             LibrarySharePath                                    = ""
@@ -96,7 +96,7 @@ Configuration VMM
             {
                 Ensure = "Present"
                 Name = "NET-Framework-Core"
-                Source = $Node.SourcePath + $WindowsServerSource
+                Source = (Join-Path -Path $Node.SourcePath -ChildPath $WindowsServerSource)
             }
         }
 <#
