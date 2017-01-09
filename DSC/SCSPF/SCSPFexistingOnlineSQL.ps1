@@ -90,7 +90,7 @@ Configuration SPF
             {
                 Ensure = "Present"
                 Name = "NET-Framework-Core"
-                Source = $Node.SourcePath + "\WindowsServer2016\sources\sxs"
+                Source = $Node.SourcePath + "\WindowsServer2012R2\sources\sxs"
             }
         }
 
