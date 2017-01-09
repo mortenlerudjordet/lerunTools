@@ -5,8 +5,6 @@ $InstallerServiceAccount = New-Object System.Management.Automation.PSCredential 
 $SecurePassword = ConvertTo-SecureString -String "Pass@word1" -AsPlainText -Force
 $SystemCenter2016VirtualMachineManagerServiceAccount = New-Object System.Management.Automation.PSCredential ("CONTOSO\!vmm", $SecurePassword)
 
-
-
 $ConfigurationData = @{
     AllNodes = @(
         @{
@@ -27,7 +25,7 @@ $ConfigurationData = @{
             SqlServer                                           = "SQL01.domain.info"
             SqlInstance                                         = "MSSQLSERVER"
             SqlDatabase                                         = "VirtualManagerDB"
-            CreateNewLibraryShare                               = 1
+            CreateNewLibraryShare                               = 0
             LibraryShareName                                    = ""
             LibrarySharePath                                    = ""
             IndigoTcpPort                                       = 8100
