@@ -15,12 +15,27 @@ $ConfigurationData = @{
             PSDscAllowDomainUser                                = $true
             SourcePath                                          = "\\SQL01\Software"
             SourceFolder                                        = "\SystemCenter2016\VirtualMachineManager"
-            SQLServer2012NativeClient                           =
+            WindowsServerSource                                 = "\WindowsServer2012R2"
+            SQLServer2012NativeClient                           = ""
             SQLServer2014ManagementToolsPath                    = ""
+            SQLServer2012CommandLineUtilities                   = ""
             InstallerServiceAccount                             = $InstallerServiceAccount
             AdminAccount                                        = "domain\VMMAdmins"
             SystemCenter2016VirtualMachineManagerServiceAccount = $SystemCenter2016VirtualMachineManagerServiceAccount
             SystemCenter2016ProductKey                          = ""
+            CreateVMMDB                                         = 1
+            SqlServer                                           = "SQL01.domain.info"
+            SqlInstance                                         = "MSSQLSERVER"
+            SqlDatabase                                         = "OperationsManager"
+            CreateNewLibraryShare                               = 1
+            LibraryShareName                                    = ""
+            LibrarySharePath                                    = ""
+            IndigoTcpPort                                       = 8100
+            IndigoHTTPSPort                                     = 8101
+            IndigoNETTCPPort                                    = 8102
+            IndigoHTTPPort                                      = 8103
+            WSManTcpPort                                        = 5985
+            BitsTcpPort                                         = 443
         }
         @{
             NodeName = "node02.domain.info"
@@ -68,11 +83,20 @@ Configuration VMM
             ($SQLServer2014ManagementTools | Where-Object {$_ -eq $Node.NodeName})
         )
         {
+            if($Node.WindowsServerSource)
+            {
+                $WindowsServerSource = (Join-Path -Path $Node.WindowsServerSource -ChildPath "\sources\sxs")
+            }
+            else
+            {
+                $WindowsServerSource = "\WindowsServer2012R2\sources\sxs"
+            }
+
             WindowsFeature "NET-Framework-Core"
             {
                 Ensure = "Present"
                 Name = "NET-Framework-Core"
-                Source = $Node.SourcePath + "\WindowsServer.TP\sources\sxs"
+                Source = $Node.SourcePath + $WindowsServerSource
             }
         }
 <#
@@ -224,6 +248,7 @@ Configuration VMM
                     $Node.SystemCenter2012VirtualMachineManagerServiceAccount.UserName
                 )
                 Credential = $Node.InstallerServiceAccount
+                PsDscRunAsCredential = $Node.InstallerServiceAccount
             }
         }
 
@@ -267,8 +292,20 @@ Configuration VMM
                 SetupCredential = $Node.InstallerServiceAccount
                 ProductKey = $Node.SystemCenter2016ProductKey
                 vmmService = $Node.SystemCenter2016VirtualMachineManagerServiceAccount
-                SqlMachineName = $SystemCenter2016VirtualMachineManagerDatabaseServer
-                SqlInstanceName = $SystemCenter2016VirtualMachineManagerDatabaseInstance
+                SqlMachineName = $Node.SqlServer
+                SqlInstanceName = $Node.SqlInstance
+                SqlDatabaseName = $Node.SqlDatabase
+                CreateNewSqlDatabase = $Node.CreateVMMDB
+                CreateNewLibraryShare = $Node.CreateNewLibraryShare
+                LibraryShareName = $Node.LibraryShareName
+                LibrarySharePath = $Node.LibrarySharePath
+                IndigoTcpPort = $Node.IndigoTcpPort
+                IndigoHTTPSPort = $Node.IndigoHTTPSPort
+                IndigoNETTCPPort = $Node.IndigoNETTCPPort
+                IndigoHTTPPort = $Node.IndigoHTTPPort
+                WSManTcpPort = $Node.WSManTcpPort
+                BitsTcpPort = $Node.BitsTcpPort
+
             }
         }
 

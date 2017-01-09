@@ -16,7 +16,7 @@ $ConfigurationData = @{
         @{
             NodeName                                            = "*"
             PSDscAllowPlainTextPassword                         = $true
-            PSDscAllowDomainUser                                = $true           
+            PSDscAllowDomainUser                                = $true
             SourcePath                                          = "\\SQL01\Software"
             SourceFolder                                        = "\SystemCenter2016\OperationsManager"
             WindowsServerSource                                 = "\WindowsServer2012R2"
@@ -30,7 +30,7 @@ $ConfigurationData = @{
             SCOMAdmins                                          = "domain\SCOMAdmins"
             ManagementGroupName                                 = "SCOM_domain"
             SystemCenterProductKey                              = ""
-                                    
+
             SqlServer                                           = "SQL01.domain.info"
             SqlInstance                                         = "MSSQLSERVER"
             SqlDatabase                                         = "OperationsManager"
@@ -42,20 +42,20 @@ $ConfigurationData = @{
             SystemCenter2016OperationsManagerReportingServer    = "node01.domain.info"
             SystemCenter2016OperationsManagerReportingInstance  = "SQL01.domain.info\MSSQLSERVER"
         }
-        @{         
+        @{
             NodeName = "Node01.domain.info"
             Roles = @(
                 "System Center 2016 Operations Manager Management Server",
                 "System Center 2016 Operations Manager Web Console Server",
-                "System Center 2016 Operations Manager Console"               
-            )            
+                "System Center 2016 Operations Manager Console"
+            )
         }
         @{
             NodeName = "Node02.domain.info"
             Roles = @(
                 "System Center 2016 Operations Manager Management Server",
                 "System Center 2016 Operations Manager Web Console Server",
-                "System Center 2016 Operations Manager Console"                
+                "System Center 2016 Operations Manager Console"
             )
         }
     )
@@ -67,7 +67,7 @@ Configuration SCOM
     Import-DscResource -Module xCredSSP
     Import-DscResource -Module xSQLServer
     Import-DscResource -Module xSCOM
-    
+
 
     # Set role and instance variables
     $Roles = $AllNodes.Roles | Sort-Object -Unique
@@ -82,7 +82,7 @@ Configuration SCOM
                 $Role.Contains("Database") -or
                 $Role.Contains("Datawarehouse") -or
                 $Role.Contains("Reporting") -or
-                $Role.Contains("Analysis") -or 
+                $Role.Contains("Analysis") -or
                 $Role.Contains("Integration")
             )
             {
@@ -90,17 +90,17 @@ Configuration SCOM
                 Set-Variable -Name ($Role.Replace(" ","").Replace(".","").Replace("Server","Instance")) -Value $Instance
             }
         }
-    }    
+    }
 
     Node $AllNodes.NodeName
     {
 
         # Install .NET Framework 3.5 on SQL and Web Console nodes
         if(
-            ($SystemCenter2016OperationsManagerDatabaseServer -eq $Node.NodeName) -or 
+            ($SystemCenter2016OperationsManagerDatabaseServer -eq $Node.NodeName) -or
             ($SystemCenter2016OperationsManagerDatawarehouseServer -eq $Node.NodeName) -or
             ($SystemCenter2016OperationsManagerReportingServer -eq $Node.NodeName) -or
-            ($SystemCenter2016OperationsManagerWebConsoleServers | Where-Object {$_ -eq $Node.NodeName})            
+            ($SystemCenter2016OperationsManagerWebConsoleServers | Where-Object {$_ -eq $Node.NodeName})
         )
         {
             if($Node.WindowsServerSource)
@@ -111,7 +111,7 @@ Configuration SCOM
             {
                 $WindowsServerSource = "\WindowsServer2012R2\sources\sxs"
             }
-            
+
             WindowsFeature "NET-Framework-Core"
             {
                 Ensure = "Present"
@@ -171,7 +171,7 @@ Configuration SCOM
                 Name = "Web-Metabase"
             }
         }
-        
+
         # Install Report Viewer 2015 on Web Console Servers and Consoles
         if(
             ($SystemCenter2016OperationsManagerWebConsoleServers | Where-Object {$_ -eq $Node.NodeName}) -or
@@ -219,13 +219,13 @@ Configuration SCOM
         # Add service accounts to admins on Management Servers
         if($SystemCenter2016OperationsManagerManagementServers | Where-Object {$_ -eq $Node.NodeName})
         {
-            
+
 			If($Node.SystemCenter2016OperationsManagerActionAccount.UserName -eq $Node.SystemCenter2016OperationsManagerDASAccount.UserName)
 			{
 				Group "Administrators"
 				{
 					GroupName = "Administrators"
-				
+
 					MembersToInclude = @(
 						$Node.SystemCenter2016OperationsManagerDASAccount.UserName
 					)
@@ -233,11 +233,11 @@ Configuration SCOM
 					PsDscRunAsCredential = $Node.InstallerServiceAccount
 				}
 			}
-			Else 
+			Else
 			{
 				Group "Administrators"
 				{
-					GroupName = "Administrators"                    
+					GroupName = "Administrators"
 					MembersToInclude = @(
 						$Node.SystemCenter2016OperationsManagerActionAccount.UserName,
 						$Node.SystemCenter2016OperationsManagerDASAccount.UserName
@@ -274,8 +274,8 @@ Configuration SCOM
                 "[Group]Administrators"
             )
             #>
-            
-            # Assumes SQL is Online            
+
+            # Assumes SQL is Online
             # Wait for Operations SQL Server
 <#
             if ($SystemCenter2016OperationsManagerManagementServers[0] -eq $SystemCenter2016OperationsManagerDatabaseServer)
@@ -337,10 +337,10 @@ Configuration SCOM
                 SqlServerInstance = ($Node.SQLServer + "\" + $Node.SQLInstance)
                 DatabaseName = $Node.SqlDatabase
                 DatabaseSize = $Node.DatabaseSize
-                DwSqlServerInstance = ($Node.SQLDWServer + "\" + $Node.SQLDWInstance)                 
+                DwSqlServerInstance = ($Node.SQLDWServer + "\" + $Node.SQLDWInstance)
                 DwDatabaseName = $Node.SqlDWDatabase
                 DwDatabaseSize = $Node.DwDatabaseSize
-                
+
             }
         }
 
@@ -348,7 +348,7 @@ Configuration SCOM
         # and Reporting and Web Console server, if they are not on a Management Server
         if(
             (
-                ($SystemCenter2016OperationsManagerManagementServers | Where-Object {$_ -eq $Node.NodeName}) -and 
+                ($SystemCenter2016OperationsManagerManagementServers | Where-Object {$_ -eq $Node.NodeName}) -and
                 ($SystemCenter2016OperationsManagerManagementServers[0] -ne $Node.NodeName)
             ) -or
             (
@@ -373,7 +373,7 @@ Configuration SCOM
 
         # Install other Management Servers
         if(
-            ($SystemCenter2016OperationsManagerManagementServers | Where-Object {$_ -eq $Node.NodeName}) -and 
+            ($SystemCenter2016OperationsManagerManagementServers | Where-Object {$_ -eq $Node.NodeName}) -and
             ($SystemCenter2016OperationsManagerManagementServers[0] -ne $Node.NodeName)
         )
         {
@@ -386,14 +386,14 @@ Configuration SCOM
                 Ensure = "Present"
                 SourcePath = $Node.SourcePath
                 SourceFolder = $Node.SourceFolder
-                SetupCredential = $Node.InstallerServiceAccount                
+                SetupCredential = $Node.InstallerServiceAccount
                 FirstManagementServer = $false
                 ActionAccount = $Node.SystemCenter2016OperationsManagerActionAccount
                 DASAccount = $Node.SystemCenter2016OperationsManagerDASAccount
                 DataReader = $Node.SystemCenter2016OperationsManagerDataReader
                 DataWriter = $Node.SystemCenter2016OperationsManagerDataWriter
                 SqlServerInstance = ($Node.SQLServer + "\" + $Node.SQLInstance)
-                DatabaseName = $Node.SqlDatabase                
+                DatabaseName = $Node.SqlDatabase
             }
         }
 
