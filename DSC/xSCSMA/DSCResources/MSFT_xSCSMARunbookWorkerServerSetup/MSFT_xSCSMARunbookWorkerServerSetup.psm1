@@ -226,7 +226,7 @@ function Set-TargetResource
         }
     }
 
-    $Path = "msiexec.exe"
+    $Path = "$env:windir\system32\msiexec.exe"
     $Path = ResolvePath $Path
 
     switch($Ensure)
