@@ -291,6 +291,7 @@ function Set-TargetResource
             if($LogMSIinstall) {
                 # Create Path if not exist
                 $logPathName = Join-Path -Path $MSIlogPath -ChildPath $MSIlogName
+                Write-Verbose "MSI install log location: $logPathName"
                 If(!(Test-Path -Path $MSIlogPath))
                 {
                     New-Item -ItemType Directory -Force -Path $MSIlogPath
