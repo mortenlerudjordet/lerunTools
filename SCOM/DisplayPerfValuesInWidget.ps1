@@ -125,8 +125,4 @@ foreach ($dataObject in $ProcessedObjects)
     # Increment counter
     $sortIndex++
 }
-<<<<<<< HEAD
-#///////// Main Section ///////////////////// END
-=======
 #endregion Main
->>>>>>> e1193d01bb515a1ec7d20f5acb80ad709a483002
