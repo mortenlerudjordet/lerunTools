@@ -125,3 +125,4 @@ foreach ($dataObject in $ProcessedObjects)
     # Increment counter
     $sortIndex++
 }
+#///////// Main Section ///////////////////// END
