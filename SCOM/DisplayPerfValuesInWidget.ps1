@@ -73,7 +73,7 @@ PARAM([string]$Counter)
 foreach ($Agent in $Agents) {
     $dataObject = $ScriptContext.CreateFromObject($Agent, "Id=Id,State=HealthState", $null)
     $dataObject["Name"]= $Agent.DisplayName
-    $dataObject["Patch Level"]=$Agent.'[Microsoft.SystemCenter.HealthService].PatchList'.Value
+    $dataObject["Version"]=$Agent.'[Microsoft.SystemCenter.HealthService].Version'.Value
     $dataObject["Path"]= $Agent.Path
 
     if ($dataObject -ne $null)  {
