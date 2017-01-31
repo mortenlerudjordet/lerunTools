@@ -1,12 +1,9 @@
 #region Parameters
 # Set sample interval Last 3 hours UTC
 $aggregationInterval = 3
-$TopN = 30
-$PerfCounterName = "Send Queue Size"
-$RuleDisplayName = "Collect Health Service Management Group\Send Queue Size"
-
-$Class = Get-SCOMClass -Name Microsoft.SystemCenter.Agent
-$Agents = Get-SCOMClassInstance -class $Class
+$TopN = 50
+$PerfCounterName = "snapshotAgeHours"
+$RuleDisplayName = "VMGUEST.Collect.snapshotAge"
 
 $avg_stat = @{}
 $dataObjects = @()
@@ -70,11 +67,15 @@ PARAM([string]$Counter)
 
 #region Main
 
-foreach ($Agent in $Agents) {
-    $dataObject = $ScriptContext.CreateFromObject($Agent, "Id=Id,State=HealthState", $null)
-    $dataObject["Name"]= $Agent.DisplayName
-    $dataObject["Patch Level"]=$Agent.'[Microsoft.SystemCenter.HealthService].PatchList'.Value
-    $dataObject["Path"]= $Agent.Path
+$Class = Get-SCOMClass -Name Veeam.Virt.Extensions.VMware.VMGUEST
+$Instances = Get-SCOMClassInstance -class $Class
+
+foreach ($Instance in $Instances) {
+    $dataObject = $ScriptContext.CreateFromObject($Instance, "Id=Id,State=HealthState", $null)
+    $dataObject["Name"]= $Instance.DisplayName
+    $dataObject["DataStore"]=$Instance.'[Veeam.Virt.Extensions.VMware.VMGUEST].usesDatastores'.Value
+    $dataObject["Cluster"]=$Instance.'[Veeam.Virt.Extensions.VMware.VMGUEST].clusterName'.Value
+    $dataObject["Path"]= $Instance.Path
 
     if ($dataObject -ne $null)  {
         $dt = New-TimeSpan -hour $aggregationInterval
@@ -84,7 +85,7 @@ foreach ($Agent in $Agents) {
         $now = $nowlocal.ToUniversalTime()
         $from = $now.Subtract($dt)
 
-        $perfRules = $Agent.GetMonitoringPerformanceData()
+        $perfRules = $Instance.GetMonitoringPerformanceData()
         foreach ($perfRule in $perfRules) {
             if($perfRule.CounterName -eq $PerfCounterName -and $perfRule.RuleDisplayName -eq $RuleDisplayName)   {
                 $data = $perfRule.GetValues($from, $now) | ForEach-Object { $_.SampleValue } | Measure-Object -Average
@@ -97,7 +98,7 @@ foreach ($Agent in $Agents) {
 
 # Sorts array of hashtables on perf counter defined in PerfCounterName on the averagevalue parameter and selects topN of these
 # Use Descending parameter to sort from highest to lowest perf value
-$ProcessedObjects = $dataObjects | Sort-Object  {$_[$PerfCounterName]["AverageValue"]} -Descending #| Select-Object -First $TopN
+$ProcessedObjects = $dataObjects | Sort-Object  {$_[$PerfCounterName]["AverageValue"]} -Descending | Select-Object -First $TopN
 
 $sortIndex = 0
 foreach ($dataObject in $ProcessedObjects)
@@ -125,8 +126,4 @@ foreach ($dataObject in $ProcessedObjects)
     # Increment counter
     $sortIndex++
 }
-<<<<<<< HEAD
-#///////// Main Section ///////////////////// END
-=======
 #endregion Main
->>>>>>> e1193d01bb515a1ec7d20f5acb80ad709a483002

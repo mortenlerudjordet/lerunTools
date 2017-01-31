@@ -2,11 +2,8 @@
 # Set sample interval Last 3 hours UTC
 $aggregationInterval = 3
 $TopN = 30
-$PerfCounterName = "Send Queue Size"
-$RuleDisplayName = "Collect Health Service Management Group\Send Queue Size"
-
-$Class = Get-SCOMClass -Name Microsoft.SystemCenter.Agent
-$Agents = Get-SCOMClassInstance -class $Class
+$PerfCounterName = "diskLatency"
+$RuleDisplayName = "VMGUEST.Collect.diskLatency"
 
 $avg_stat = @{}
 $dataObjects = @()
@@ -69,12 +66,15 @@ PARAM([string]$Counter)
 #endregion Functions
 
 #region Main
+$Class = Get-SCOMClass -Name Veeam.Virt.Extensions.VMware.VMGUEST
+$Instances = Get-SCOMClassInstance -class $Class
 
-foreach ($Agent in $Agents) {
-    $dataObject = $ScriptContext.CreateFromObject($Agent, "Id=Id,State=HealthState", $null)
-    $dataObject["Name"]= $Agent.DisplayName
-    $dataObject["Patch Level"]=$Agent.'[Microsoft.SystemCenter.HealthService].PatchList'.Value
-    $dataObject["Path"]= $Agent.Path
+foreach ($Instance in $Instances) {
+    $dataObject = $ScriptContext.CreateFromObject($Instance, "Id=Id,State=HealthState", $null)
+    $dataObject["Name"]= $Instance.DisplayName
+    $dataObject["DataStore"]=$Instance.'[Veeam.Virt.Extensions.VMware.VMGUEST].usesDatastores'.Value
+    $dataObject["Cluster"]=$Instance.'[Veeam.Virt.Extensions.VMware.VMGUEST].clusterName'.Value
+    $dataObject["Path"]= $Instance.Path
 
     if ($dataObject -ne $null)  {
         $dt = New-TimeSpan -hour $aggregationInterval
@@ -84,7 +84,7 @@ foreach ($Agent in $Agents) {
         $now = $nowlocal.ToUniversalTime()
         $from = $now.Subtract($dt)
 
-        $perfRules = $Agent.GetMonitoringPerformanceData()
+        $perfRules = $Instance.GetMonitoringPerformanceData()
         foreach ($perfRule in $perfRules) {
             if($perfRule.CounterName -eq $PerfCounterName -and $perfRule.RuleDisplayName -eq $RuleDisplayName)   {
                 $data = $perfRule.GetValues($from, $now) | ForEach-Object { $_.SampleValue } | Measure-Object -Average
@@ -125,8 +125,4 @@ foreach ($dataObject in $ProcessedObjects)
     # Increment counter
     $sortIndex++
 }
-<<<<<<< HEAD
-#///////// Main Section ///////////////////// END
-=======
 #endregion Main
->>>>>>> e1193d01bb515a1ec7d20f5acb80ad709a483002
