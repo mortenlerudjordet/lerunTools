@@ -91,7 +91,6 @@ Imports runbook(s) into an SMA instance. The Workflow name is expected to match 
 * **Ensure**: (Required) The import state of runbooks found at RunbookPath. This can be Published, Draft, or Absent.
 * **WebServiceEndpoint**: (Key) The web service endpoint of the SMA instance to import the Runbook too.
 * **Port**: Port to reach the web service endpoint. Defaults to the SMA default of 9090.
-* **Port** Port to reach the web service endpoint. Defaults to the SMA default of 9090.
 
 ### xSmaVariable
 
