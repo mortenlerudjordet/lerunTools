@@ -1,0 +1,52 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Monitoring>
+    <Monitors>
+      <UnitMonitor ID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum" Accessibility="Public" Enabled="false" Target="SCLibrary!Microsoft.SystemCenter.Agent" ParentMonitorID="Health!System.Health.ConfigurationState" Remotable="true" Priority="Normal" TypeID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" ConfirmDelivery="false">
+        <Category>StateCollection</Category>
+        <AlertSettings AlertMessage="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum.AlertMessage">
+          <AlertOnState>Error</AlertOnState>
+          <AutoResolve>true</AutoResolve>
+          <AlertPriority>Normal</AlertPriority>
+          <AlertSeverity>Error</AlertSeverity>
+          <AlertParameters>
+            <AlertParameter1>$Target/Host/Property[Type="Windows!Microsoft.Windows.Computer"]/NetworkName$</AlertParameter1>
+          </AlertParameters>
+        </AlertSettings>
+        <OperationalStates>
+          <OperationalState ID="WMISuccess" MonitorTypeStateID="WMISuccess" HealthState="Success"/>
+          <OperationalState ID="WMIError" MonitorTypeStateID="WMIError" HealthState="Error"/>
+        </OperationalStates>
+        <Configuration>
+          <IntervalSeconds>86400</IntervalSeconds>
+          <TimeoutSeconds>300</TimeoutSeconds>
+          <LogLevelText>Information</LogLevelText>
+        </Configuration>
+      </UnitMonitor>
+    </Monitors>
+  </Monitoring>
+  <Presentation>
+    <StringResources>
+      <StringResource ID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum.AlertMessage" />
+    </StringResources>
+  </Presentation>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum">
+          <Name>WMI Health Monitor Addendum</Name>
+          <Description>This monitor checks whether WMI is healthy by periodically performing a WMI query</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum" SubElementID="WMIError">
+          <Name>WMI functionality Error</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum" SubElementID="WMISuccess">
+          <Name>WMI functionality Success</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum.AlertMessage">
+          <Name>WMI is unhealthy</Name>
+          <Description>WMI on computer {0} is unhealthy</Description>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>

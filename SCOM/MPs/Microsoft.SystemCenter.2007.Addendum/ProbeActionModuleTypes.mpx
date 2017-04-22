@@ -1,0 +1,61 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <TypeDefinitions>
+    <ModuleTypes>
+      <ProbeActionModuleType ID="Microsoft.SystemCenter.WMIFunctionalCheckAddendum.Probe" Accessibility="Internal" Batching="false" PassThrough="false">
+        <Configuration>
+          <xsd:element minOccurs="1" name="ComputerName" type="xsd:string"/>
+          <xsd:element minOccurs="1" name="TimeoutSeconds" type="xsd:integer"/>
+          <xsd:element minOccurs="1" name="LogLevelText" type="xsd:string"/>
+        </Configuration>
+        <OverrideableParameters>
+          <OverrideableParameter ID="TimeoutSeconds" Selector="$Config/TimeoutSeconds$" ParameterType="int"/>
+          <OverrideableParameter ID="LogLevelText" Selector="$Config/LogLevelText$" ParameterType="string"/>
+        </OverrideableParameters>
+        <ModuleImplementation Isolation="Any">
+          <Composite>
+            <MemberModules>
+              <ProbeAction ID="Probe" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
+                <ScriptName>WMIFunctionalCheck.ps1</ScriptName>
+                <ScriptBody>$IncludeFileContent/WMIFunctionalCheck.ps1$</ScriptBody>
+                <Parameters>
+                  <Parameter>
+                    <Name>ComputerName</Name>
+                    <Value>$Config/ComputerName$</Value>
+                  </Parameter>
+                  <Parameter>
+                    <Name>LogLevelText</Name>
+                    <Value>$Config/LogLevelText$</Value>
+                  </Parameter>
+                </Parameters>
+                <TimeoutSeconds>$Config/TimeoutSeconds$</TimeoutSeconds>
+              </ProbeAction>
+            </MemberModules>
+            <Composition>
+              <Node ID="Probe"/>
+            </Composition>
+          </Composite>
+        </ModuleImplementation>
+        <OutputType>System!System.PropertyBagData</OutputType>
+        <InputType>System!System.BaseData</InputType>
+      </ProbeActionModuleType>
+    </ModuleTypes>
+  </TypeDefinitions>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="Microsoft.SystemCenter.WMIFunctionalCheckAddendum.Probe">
+          <Name>WMI functional Check Probe</Name>
+          <Description>Probe for the WMI Functional Check</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.WMIFunctionalCheckAddendum.Probe" SubElementID="TimeoutSeconds">
+          <Name>Time out Seconds</Name>
+          <Description>Time to wait until cancel execution of script expressed in seconds</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.WMIFunctionalCheckAddendum.Probe" SubElementID="LogLevelText">
+          <Name>Level to log</Name>
+          <Description>Use Information, Warning or Error to set the level of logging for probe script</Description>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>

@@ -1,0 +1,128 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <TypeDefinitions>
+    <MonitorTypes>
+      <UnitMonitorType ID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" Accessibility="Internal" RunAs="System!System.PrivilegedMonitoringAccount">
+        <MonitorTypeStates>
+          <MonitorTypeState ID="WMIError" NoDetection="false"/>
+          <MonitorTypeState ID="WMISuccess" NoDetection="false"/>
+        </MonitorTypeStates>
+        <Configuration>
+          <xsd:element name="IntervalSeconds" type="xsd:unsignedInt"/>
+          <xsd:element name="TimeoutSeconds" type="xsd:integer"/>
+          <xsd:element name="LogLevelText" type="xsd:string"/>
+        </Configuration>
+        <OverrideableParameters>
+          <OverrideableParameter ID="IntervalSeconds" Selector="$Config/IntervalSeconds$" ParameterType="int"/>
+          <OverrideableParameter ID="TimeoutSeconds" Selector="$Config/TimeoutSeconds$" ParameterType="int"/>
+          <OverrideableParameter ID="LogLevelText" Selector="$Config/LogLevelText$" ParameterType="string"/>
+        </OverrideableParameters>
+        <MonitorImplementation>
+          <MemberModules>
+            <DataSource TypeID="System!System.Scheduler" ID="Scheduler">
+              <Scheduler>
+                <SimpleReccuringSchedule>
+                  <Interval Unit="Seconds">$Config/IntervalSeconds$</Interval>
+                </SimpleReccuringSchedule>
+                <ExcludeDates/>
+              </Scheduler>
+            </DataSource>
+            <ProbeAction TypeID="Microsoft.SystemCenter.WMIFunctionalCheckAddendum.Probe" ID="Probe">
+              <ComputerName>$Target/Host/Property[Type="Windows!Microsoft.Windows.Computer"]/NetworkName$</ComputerName>
+              <TimeoutSeconds>$Config/TimeoutSeconds$</TimeoutSeconds>
+              <LogLevelText>$Config/LogLevelText$</LogLevelText>
+            </ProbeAction>
+            <ProbeAction ID="PassThrough" TypeID="System!System.PassThroughProbe"/>
+            <ConditionDetection ID="ErrorFilter" TypeID="System!System.ExpressionFilter">
+              <Expression>
+                <SimpleExpression>
+                  <ValueExpression>
+                    <XPathQuery>Property[@Name='Status']</XPathQuery>
+                  </ValueExpression>
+                  <Operator>NotEqual</Operator>
+                  <ValueExpression>
+                    <Value Type="String">OK</Value>
+                  </ValueExpression>
+                </SimpleExpression>
+              </Expression>
+            </ConditionDetection>
+            <ConditionDetection ID="SuccessFilter" TypeID="System!System.ExpressionFilter">
+              <Expression>
+                <SimpleExpression>
+                  <ValueExpression>
+                    <XPathQuery>Property[@Name='Status']</XPathQuery>
+                  </ValueExpression>
+                  <Operator>Equal</Operator>
+                  <ValueExpression>
+                    <Value Type="String">OK</Value>
+                  </ValueExpression>
+                </SimpleExpression>
+              </Expression>
+            </ConditionDetection>
+          </MemberModules>
+          <RegularDetections>
+            <RegularDetection MonitorTypeStateID="WMIError">
+              <Node ID="ErrorFilter">
+                <Node ID="Probe">
+                  <Node ID="Scheduler"/>
+                </Node>
+              </Node>
+            </RegularDetection>
+            <RegularDetection MonitorTypeStateID="WMISuccess">
+              <Node ID="SuccessFilter">
+                <Node ID="Probe">
+                  <Node ID="Scheduler"/>
+                </Node>
+              </Node>
+            </RegularDetection>
+          </RegularDetections>
+          <OnDemandDetections>
+            <OnDemandDetection MonitorTypeStateID="WMIError">
+              <Node ID="ErrorFilter">
+                <Node ID="Probe">
+                  <Node ID="PassThrough"/>
+                </Node>
+              </Node>
+            </OnDemandDetection>
+            <OnDemandDetection MonitorTypeStateID="WMISuccess">
+              <Node ID="SuccessFilter">
+                <Node ID="Probe">
+                  <Node ID="PassThrough"/>
+                </Node>
+              </Node>
+            </OnDemandDetection>
+          </OnDemandDetections>
+        </MonitorImplementation>
+      </UnitMonitorType>
+    </MonitorTypes>
+  </TypeDefinitions>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType">
+          <Name>WMI functional Monitor Type</Name>
+          <Description>Monitor type for the WMI health monitor</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" SubElementID="WMIError">
+          <Name>WMI functional Monitor Type - WMI Error</Name>
+          <Description>Error state for this type of monitor</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" SubElementID="WMISuccess">
+          <Name>WMI functional Monitor Type  - WMI Success</Name>
+          <Description>Success state for this type of monitor</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" SubElementID="IntervalSeconds">
+          <Name>Interval (Seconds)</Name>
+          <Description>Interval time expressed in seconds</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" SubElementID="TimeoutSeconds">
+          <Name>Time out (Seconds)</Name>
+          <Description>Time to wait until cancel execution of script expressed in seconds</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" SubElementID="LogLevelText">
+          <Name>Level to log</Name>
+          <Description>Use Information, Warning or Error to set the level of logging for probe script</Description>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>
