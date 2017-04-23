@@ -1,0 +1,26 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Monitoring>
+    <Diagnostics>
+      <Diagnostic ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeAddendum.Diagnostic" Accessibility="Public" Enabled="false" Target="SCLibrary!Microsoft.SystemCenter.HealthService" Monitor="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum" ExecuteOnState="Error" Remotable="false" Timeout="300">
+        <Category>Maintenance</Category>
+        <ProbeAction ID="Probe" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeScriptAddendum.Probe">
+          <TimeoutSeconds>300</TimeoutSeconds>
+          <ComputerName>$Target/Host/Property[Type="Windows!Microsoft.Windows.Computer"]/PrincipalName$</ComputerName>
+          <RunAsDiagnostic>true</RunAsDiagnostic>
+          <ProcessIterationCount>3</ProcessIterationCount>
+          <LogLevelText>Warning</LogLevelText>
+        </ProbeAction>
+      </Diagnostic>
+    </Diagnostics>
+  </Monitoring>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeAddendum.Diagnostic">
+          <Name>Collect agent processor utilization diagnostic</Name>
+          <Description>This diagnostic can be run to sample the agent processor utilization when the monitor state changes.</Description>
+        </DisplayString>
+      </DisplayStrings>            
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>

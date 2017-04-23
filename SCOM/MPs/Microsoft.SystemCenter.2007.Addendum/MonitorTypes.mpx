@@ -93,6 +93,118 @@
           </OnDemandDetections>
         </MonitorImplementation>
       </UnitMonitorType>
+      <UnitMonitorType ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" Accessibility="Internal" RunAs="System!System.PrivilegedMonitoringAccount">
+        <MonitorTypeStates>
+          <MonitorTypeState ID="OverThreshold" NoDetection="false" />
+          <MonitorTypeState ID="UnderThreshold" NoDetection="false" />
+        </MonitorTypeStates>
+        <Configuration>
+          <xsd:element minOccurs="1" name="IntervalSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="TimeoutSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="0" name="SyncTime" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="ComputerName" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="Threshold" type="xsd:double" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="ConsecutiveSampleCountCritical" type="xsd:double" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="ConsecutiveSampleCountHealthy" type="xsd:double" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element name="LogLevelText" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+        </Configuration>
+        <OverrideableParameters>
+          <OverrideableParameter ID="IntervalSeconds" Selector="$Config/IntervalSeconds$" ParameterType="int" />
+          <OverrideableParameter ID="TimeoutSeconds" Selector="$Config/TimeoutSeconds$" ParameterType="int" />
+          <OverrideableParameter ID="SyncTime" Selector="$Config/SyncTime$" ParameterType="string" />
+          <OverrideableParameter ID="Threshold" Selector="$Config/Threshold$" ParameterType="double" />
+          <OverrideableParameter ID="ConsecutiveSampleCountCritical" Selector="$Config/ConsecutiveSampleCountCritical$" ParameterType="double" />
+          <OverrideableParameter ID="ConsecutiveSampleCountHealthy" Selector="$Config/ConsecutiveSampleCountHealthy$" ParameterType="double" />
+          <OverrideableParameter ID="LogLevelText" Selector="$Config/LogLevelText$" ParameterType="string"/>
+        </OverrideableParameters>
+        <MonitorImplementation>
+          <MemberModules>
+            <DataSource ID="DS" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.DataSource">
+              <IntervalSeconds>$Config/IntervalSeconds$</IntervalSeconds>
+              <TimeoutSeconds>$Config/TimeoutSeconds$</TimeoutSeconds>
+              <SyncTime>$Config/SyncTime$</SyncTime>
+              <ComputerName>$Config/ComputerName$</ComputerName>
+              <LogLevelText>$Config/LogLevelText$</LogLevelText>
+            </DataSource>
+            <ProbeAction ID="Probe" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.Probe">
+              <TimeoutSeconds>$Config/TimeoutSeconds$</TimeoutSeconds>
+              <ComputerName>$Config/ComputerName$</ComputerName>
+              <LogLevelText>$Config/LogLevelText$</LogLevelText>
+            </ProbeAction>
+            <ProbeAction ID="PassThrough" TypeID="System!System.PassThroughProbe" />
+            <ConditionDetection ID="ConsecutiveMoreThanThresholdSamples" TypeID="Performance!System.Performance.ConsecutiveSamplesCondition">
+              <Threshold>$Config/Threshold$</Threshold>
+              <Direction>greater</Direction>
+            </ConditionDetection>
+            <ConditionDetection ID="ConsecutiveLessThanThresholdSamples" TypeID="Performance!System.Performance.ConsecutiveSamplesCondition">
+              <Threshold>$Config/Threshold$</Threshold>
+              <Direction>less</Direction>
+            </ConditionDetection>
+            <ConditionDetection ID="SufficientCriticalSamplesCD" TypeID="System!System.ExpressionFilter">
+              <Expression>
+                <SimpleExpression>
+                  <ValueExpression>
+                    <XPathQuery Type="Double">Value</XPathQuery>
+                  </ValueExpression>
+                  <Operator>GreaterEqual</Operator>
+                  <ValueExpression>
+                    <Value Type="Double">$Config/ConsecutiveSampleCountCritical$</Value>
+                  </ValueExpression>
+                </SimpleExpression>
+              </Expression>
+            </ConditionDetection>
+            <ConditionDetection ID="SufficientHealthySamplesCD" TypeID="System!System.ExpressionFilter">
+              <Expression>
+                <SimpleExpression>
+                  <ValueExpression>
+                    <XPathQuery Type="Double">Value</XPathQuery>
+                  </ValueExpression>
+                  <Operator>GreaterEqual</Operator>
+                  <ValueExpression>
+                    <Value Type="Double">$Config/ConsecutiveSampleCountHealthy$</Value>
+                  </ValueExpression>
+                </SimpleExpression>
+              </Expression>
+            </ConditionDetection>
+          </MemberModules>
+          <RegularDetections>
+            <RegularDetection MonitorTypeStateID="OverThreshold">
+              <Node ID="SufficientCriticalSamplesCD">
+                <Node ID="ConsecutiveMoreThanThresholdSamples">
+                  <Node ID="DS" />
+                </Node>
+              </Node>
+            </RegularDetection>
+            <RegularDetection MonitorTypeStateID="UnderThreshold">
+              <Node ID="SufficientHealthySamplesCD">
+                <Node ID="ConsecutiveLessThanThresholdSamples">
+                  <Node ID="DS" />
+                </Node>
+              </Node>
+            </RegularDetection>
+          </RegularDetections>
+          <OnDemandDetections>
+            <OnDemandDetection MonitorTypeStateID="OverThreshold">
+              <Node ID="SufficientCriticalSamplesCD">
+                <Node ID="ConsecutiveMoreThanThresholdSamples">
+                  <Node ID="Probe">
+                    <Node ID="PassThrough" />
+                  </Node>
+                </Node>
+              </Node>
+            </OnDemandDetection>
+            <OnDemandDetection MonitorTypeStateID="UnderThreshold">
+              <Node ID="SufficientHealthySamplesCD">
+                <Node ID="ConsecutiveLessThanThresholdSamples">
+                  <Node ID="Probe">
+                    <Node ID="PassThrough" />
+                  </Node>
+                </Node>
+              </Node>
+            </OnDemandDetection>
+          </OnDemandDetections>
+        </MonitorImplementation>
+      </UnitMonitorType>
     </MonitorTypes>
   </TypeDefinitions>
   <LanguagePacks>
@@ -119,6 +231,38 @@
           <Description>Time to wait until cancel execution of script expressed in seconds</Description>
         </DisplayString>
         <DisplayString ElementID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" SubElementID="LogLevelText">
+          <Name>Level to log</Name>
+          <Description>Use Information, Warning or Error to set the level of logging for probe script</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum">
+          <Name>Agent processor utilization monitor type</Name>
+          <Description>This monitor type is used for creating monitors which watch the agent processor utilization.</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="ConsecutiveSampleCountCritical">
+          <Name>Number of consecutive samples for critical state</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="ConsecutiveSampleCountHealthy">
+          <Name>Number of consecutive samples for healthy state</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="IntervalSeconds">
+          <Name>Frequency (seconds)</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="OverThreshold">
+          <Name>Over Threshold</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="SyncTime">
+          <Name>Synchronization time</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="Threshold">
+          <Name>Threshold</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="TimeoutSeconds">
+          <Name>Timeout (seconds)</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="UnderThreshold">
+          <Name>Under Threshold</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="LogLevelText">
           <Name>Level to log</Name>
           <Description>Use Information, Warning or Error to set the level of logging for probe script</Description>
         </DisplayString>

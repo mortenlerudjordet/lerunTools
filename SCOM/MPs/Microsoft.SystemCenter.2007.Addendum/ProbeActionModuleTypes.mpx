@@ -38,6 +38,91 @@
         <OutputType>System!System.PropertyBagData</OutputType>
         <InputType>System!System.BaseData</InputType>
       </ProbeActionModuleType>
+      <ProbeActionModuleType ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeScriptAddendum.Probe" Accessibility="Internal" Batching="false" PassThrough="false">
+        <Configuration>
+          <xsd:element minOccurs="1" name="TimeoutSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="ComputerName" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="RunAsDiagnostic" type="xsd:boolean" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="ProcessIterationCount" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="LogLevelText" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+        </Configuration>
+        <OverrideableParameters>
+          <OverrideableParameter ID="TimeoutSeconds" Selector="$Config/TimeoutSeconds$" ParameterType="int" />
+          <OverrideableParameter ID="ProcessIterationCount" Selector="$Config/ProcessIterationCount$" ParameterType="int" />
+          <OverrideableParameter ID="LogLevelText" Selector="$Config/LogLevelText$" ParameterType="string"/>
+        </OverrideableParameters>
+        <ModuleImplementation Isolation="Any">
+          <Composite>
+            <MemberModules>
+              <ProbeAction ID="Probe" TypeID="Windows!Microsoft.Windows.PowerShellPropertyBagProbe">
+                <ScriptName>SCOMpercentageCPUTimeCounter.ps1</ScriptName>
+                <ScriptBody>$IncludeFileContent/SCOMpercentageCPUTimeCounter.ps1$</ScriptBody>
+                <Parameters>
+                  <Parameter>
+                    <Name>ComputerName</Name>
+                    <Value>$Config/ComputerName$</Value>
+                  </Parameter>
+                  <Parameter>
+                    <Name>ConfigForRun</Name>
+                    <Value>$Config/RunAsDiagnostic$</Value>
+                  </Parameter>
+                  <Parameter>
+                    <Name>ProcessIterationCount</Name>
+                    <Value>$Config/ProcessIterationCount$</Value>
+                  </Parameter>
+                  <Parameter>
+                    <Name>LogLevelText</Name>
+                    <Value>$Config/LogLevelText$</Value>
+                  </Parameter>
+                </Parameters>
+                <TimeoutSeconds>$Config/TimeoutSeconds$</TimeoutSeconds>
+              </ProbeAction>
+            </MemberModules>
+            <Composition>
+              <Node ID="Probe" />
+            </Composition>
+          </Composite>
+        </ModuleImplementation>
+        <OutputType>System!System.PropertyBagData</OutputType>
+        <InputType>System!System.BaseData</InputType>
+      </ProbeActionModuleType>
+      <ProbeActionModuleType ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.Probe" Accessibility="Internal" Batching="false" PassThrough="false">
+        <Configuration>
+          <xsd:element minOccurs="1" name="TimeoutSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="ComputerName" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="1" name="LogLevelText" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+        </Configuration>
+        <OverrideableParameters>
+          <OverrideableParameter ID="TimeoutSeconds" Selector="$Config/TimeoutSeconds$" ParameterType="int" />
+          <OverrideableParameter ID="LogLevelText" Selector="$Config/LogLevelText$" ParameterType="string"/>
+        </OverrideableParameters>
+        <ModuleImplementation Isolation="Any">
+          <Composite>
+            <MemberModules>
+              <ProbeAction ID="Probe" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeScriptAddendum.Probe">
+                <TimeoutSeconds>$Config/TimeoutSeconds$</TimeoutSeconds>
+                <ComputerName>$Config/ComputerName$</ComputerName>
+                <RunAsDiagnostic>false</RunAsDiagnostic>
+                <ProcessIterationCount>3</ProcessIterationCount>
+                <LogLevelText>$Config/LogLevelText$</LogLevelText>
+              </ProbeAction>
+              <ConditionDetection ID="CD" TypeID="Performance!System.Performance.DataGenericMapper">
+                <ObjectName>Health Service</ObjectName>
+                <CounterName>agent processor utilization</CounterName>
+                <InstanceName />
+                <Value>$Data/Property[@Name='SCOMpercentageCPUTime']$</Value>
+              </ConditionDetection>
+            </MemberModules>
+            <Composition>
+              <Node ID="CD">
+                <Node ID="Probe" />
+              </Node>
+            </Composition>
+          </Composite>
+        </ModuleImplementation>
+        <OutputType>Performance!System.Performance.Data</OutputType>
+        <InputType>System!System.BaseData</InputType>
+      </ProbeActionModuleType>
     </ModuleTypes>
   </TypeDefinitions>
   <LanguagePacks>
@@ -52,6 +137,28 @@
           <Description>Time to wait until cancel execution of script expressed in seconds</Description>
         </DisplayString>
         <DisplayString ElementID="Microsoft.SystemCenter.WMIFunctionalCheckAddendum.Probe" SubElementID="LogLevelText">
+          <Name>Level to log</Name>
+          <Description>Use Information, Warning or Error to set the level of logging for probe script</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeScriptAddendum.Probe">
+          <Name>Agent processor utilization probe module addendum</Name>
+          <Description>This probe is used to generate the "agent processor utilization" counter for use in rules and monitors.</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeScriptAddendum.Probe" SubElementID="TimeoutSeconds">
+          <Name>Timeout (seconds)</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeScriptAddendum.Probe" SubElementID="LogLevelText">
+          <Name>Level to log</Name>
+          <Description>Use Information, Warning or Error to set the level of logging for probe script</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.Probe">
+          <Name>Agent processor utilization probe module addendum</Name>
+          <Description>This probe is used to generate the "agent processor utilization" counter for use in rules and monitors.</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.Probe" SubElementID="TimeoutSeconds">
+          <Name>Timeout (seconds)</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.Probe" SubElementID="LogLevelText">
           <Name>Level to log</Name>
           <Description>Use Information, Warning or Error to set the level of logging for probe script</Description>
         </DisplayString>

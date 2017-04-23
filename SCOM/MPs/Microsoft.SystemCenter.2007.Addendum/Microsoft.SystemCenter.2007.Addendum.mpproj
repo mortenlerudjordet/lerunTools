@@ -6,7 +6,7 @@
     <RootNamespace>Microsoft.SystemCenter.2007.Addendum</RootNamespace>
     <Name>Microsoft.SystemCenter.2007.Addendum</Name>
     <ManagementPackName>Microsoft.SystemCenter.2007.Addendum</ManagementPackName>
-    <Version>1.0.0.0</Version>
+    <Version>1.0.1.0</Version>
     <MpFrameworkVersion>v7.0.2</MpFrameworkVersion>
     <MpFrameworkProfile>OM</MpFrameworkProfile>
     <ProductVersion>1.1.0.0</ProductVersion>
@@ -50,8 +50,20 @@
       <Alias>Visualization</Alias>
       <PackageToBundle>False</PackageToBundle>
     </ManagementPackReference>
+    <ManagementPackReference Include="System.Performance.Library">
+      <HintPath>Q:\prosjekt\opsmgr_mp\Referance\System.Performance.Library.mp</HintPath>
+      <Alias>Performance</Alias>
+      <MinVersion>7.0.8433.0</MinVersion>
+      <PackageToBundle>False</PackageToBundle>
+    </ManagementPackReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataSources.mpx">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Diag.mpx">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Monitors.mpx">
       <SubType>Code</SubType>
     </Compile>
@@ -63,6 +75,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="SCOMpercentageCPUTimeCounter.ps1" />
     <EmbeddedResource Include="WMIFunctionalCheck.ps1" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VSAC\Microsoft.SystemCenter.OperationsManager.targets" />

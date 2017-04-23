@@ -1,6 +1,10 @@
 ﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Monitoring>
     <Monitors>
+      <AggregateMonitor ID="Microsoft.SystemCenter.HealthService.PerformanceHealthRollupAddendum" Accessibility="Public" Enabled="true" Target="SCLibrary!Microsoft.SystemCenter.HealthService" ParentMonitorID="Health!System.Health.PerformanceState" Remotable="true" Priority="Normal">
+        <Category>PerformanceCollection</Category>
+        <Algorithm>WorstOf</Algorithm>
+      </AggregateMonitor>
       <UnitMonitor ID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum" Accessibility="Public" Enabled="false" Target="SCLibrary!Microsoft.SystemCenter.Agent" ParentMonitorID="Health!System.Health.ConfigurationState" Remotable="true" Priority="Normal" TypeID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" ConfirmDelivery="false">
         <Category>StateCollection</Category>
         <AlertSettings AlertMessage="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum.AlertMessage">
@@ -22,11 +26,44 @@
           <LogLevelText>Information</LogLevelText>
         </Configuration>
       </UnitMonitor>
+      <UnitMonitor ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum" Accessibility="Public" Enabled="false" Target="SCLibrary!Microsoft.SystemCenter.HealthService" ParentMonitorID="Microsoft.SystemCenter.HealthService.PerformanceHealthRollupAddendum" Remotable="false" Priority="Normal" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" ConfirmDelivery="true">
+        <Category>Custom</Category>
+        <AlertSettings AlertMessage="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.AlertMessage">
+          <AlertOnState>Error</AlertOnState>
+          <AutoResolve>true</AutoResolve>
+          <AlertPriority>Normal</AlertPriority>
+          <AlertSeverity>Error</AlertSeverity>
+          <AlertParameters>
+            <AlertParameter1>$Target/Host/Property[Type="Windows!Microsoft.Windows.Computer"]/PrincipalName$</AlertParameter1>
+            <AlertParameter2>$Data/Context/SampleValue$</AlertParameter2>
+          </AlertParameters>
+        </AlertSettings>
+        <OperationalStates>
+          <OperationalState ID="CPUTimeOverThreshold" MonitorTypeStateID="OverThreshold" HealthState="Error" />
+          <OperationalState ID="CPUTimeUnderThreshold" MonitorTypeStateID="UnderThreshold" HealthState="Success" />
+        </OperationalStates>
+        <Configuration>
+          <IntervalSeconds>321</IntervalSeconds>
+          <TimeoutSeconds>300</TimeoutSeconds>
+          <SyncTime>00:00</SyncTime>
+          <ComputerName>$Target/Host/Property[Type="Windows!Microsoft.Windows.Computer"]/PrincipalName$</ComputerName>
+          <Threshold>25</Threshold>
+          <ConsecutiveSampleCountCritical>6</ConsecutiveSampleCountCritical>
+          <ConsecutiveSampleCountHealthy>3</ConsecutiveSampleCountHealthy>
+          <LogLevelText>Information</LogLevelText>
+        </Configuration>
+      </UnitMonitor>
     </Monitors>
+    <Overrides>
+      <MonitorPropertyOverride ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.DisableForManagementServer" Context="SCLibrary!Microsoft.SystemCenter.ManagementServerComputersGroup" Enforced="false" Monitor="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum" Property="Enabled">
+        <Value>false</Value>
+      </MonitorPropertyOverride>
+    </Overrides>
   </Monitoring>
   <Presentation>
     <StringResources>
       <StringResource ID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum.AlertMessage" />
+      <StringResource ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.AlertMessage" />
     </StringResources>
   </Presentation>
   <LanguagePacks>
@@ -45,6 +82,27 @@
         <DisplayString ElementID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum.AlertMessage">
           <Name>WMI is unhealthy</Name>
           <Description>WMI on computer {0} is unhealthy</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum">
+          <Name>Agent processor utilization addendum</Name>
+          <Description>Monitor all agent processes to identify potential issues with the agent using too much processor time.</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum" SubElementID="CPUTimeOverThreshold">
+          <Name>Processor time over threshold</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum" SubElementID="CPUTimeUnderThreshold">
+          <Name>Processor time under threshold</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.AlertMessage">
+          <Name>The Operations Manager agent processes are using too much processor time</Name>
+          <Description>The total processor utilization on computer {0} of all agent processes has exceeded the threshold of {1} over multiple samples.</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.DisableForManagementServer">
+          <Name>Disable "Agent processor utilization" for Management Servers</Name>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.PerformanceHealthRollupAddendum">
+          <Name>System Center Management Health Service Performance Addendum</Name>
+          <Description>System Center Management Health Service performance roll-up monitor.</Description>
         </DisplayString>
       </DisplayStrings>
     </LanguagePack>

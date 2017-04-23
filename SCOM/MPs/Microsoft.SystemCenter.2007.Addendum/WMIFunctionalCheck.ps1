@@ -37,7 +37,7 @@ function CheckByOSCurrentVersion #As Boolean
 #==================================================================================
 # Func:		LogEvent
 # Purpose:	Logs an informational event to the Operations Manager event log
-#			only if Debug argument is true
+#			
 #==================================================================================
 function LogEvent 
 {
@@ -94,11 +94,11 @@ Param(
   {
 	    try{
 		    # Check if CIM methods are loaded
-        if (! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) ) 
+        if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) ) 
         {
 		    # Stop if one cannot use Get-CimInstance CMDlet
             Import-Module -Name cimcmdlets -ErrorAction Stop
-	      }
+	    }
         LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Trying to connect through WinRM using computer name:  $targetComputer to get data from WMI"		
         $wbemObjectSet = Get-CimInstance -ComputerName $targetComputer -Namespace $("root\" + $BaseClass) -Query $Query -ErrorAction SilentlyContinue -ErrorVariable wbemError
             
@@ -162,9 +162,6 @@ Param(
     }
 }
 
-#Check the OS version
-$isHigherThanWin08 = CheckByOSCurrentVersion 
-
 #Define local event constants
 $SCRIPT_NAME    = 'WMIFunctionalCheck.ps1'
 $EVENT_ERROR 	= 1
@@ -187,11 +184,16 @@ Switch($LogLevelText)
         $LogLevel = 1
     }
 }
+
+# Alternate way to write to eventlog for SCOM
+Write-EventLog -EventId $EventId -LogName 'Operations Manager' -Source 'Health Service Script' -EntryType Information -Message "$SCRIPT_NAME loglevel is set to: $LogLevelText translated to number: $LogLevel"
+
+#Check the OS version
+$isHigherThanWin08 = CheckByOSCurrentVersion 
+
 #Create PropertyBag object
 $SCOMapi = new-object -comObject "MOM.ScriptAPI"
 LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script has started, loglevel is set to: $LogLevelText"
-# Alternate way to write to eventlog for SCOM
-Write-EventLog -EventId $EventId -LogName 'Operations Manager' -Source 'Health Service Script' -EntryType Information -Message "$SCRIPT_NAME loglevel is set to: $LogLevelText translated to number: $LogLevel"
 
 $propertyBag = $SCOMapi.CreatePropertyBag()
 
