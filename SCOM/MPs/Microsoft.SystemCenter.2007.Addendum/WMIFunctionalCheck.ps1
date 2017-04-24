@@ -211,7 +211,7 @@ $strWMIStatus = GetWMIStatus -ComputerName $ComputerName
 LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "WMI Status: $strWMIStatus"
 if($error.Count -ne 0)
 {
-    $strMessageToUse = "Error Details: " + $error[0]
+    $strMessageToUse = "Script WMIFunctionalCheck executed with Errors.`nError Details: " + $error[0]
     ReturnResponse -ErrorFlag $true -Message $strMessageToUse
 }
 else
