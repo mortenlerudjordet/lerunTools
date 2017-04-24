@@ -199,7 +199,7 @@ $isHigherThanWin08 = CheckByOSCurrentVersion
 
 #Create PropertyBag object
 $SCOMapi = new-object -comObject "MOM.ScriptAPI"
-LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script has started, loglevel is set to: $LogLevelText"
+LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "SCOM script API created"
 
 $propertyBag = $SCOMapi.CreatePropertyBag()
 

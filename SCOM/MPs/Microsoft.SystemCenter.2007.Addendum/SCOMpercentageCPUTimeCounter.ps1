@@ -171,7 +171,7 @@ $isHigherThanWin08 = CheckByOSCurrentVersion
 
 #Create PropertyBag object
 $oAPI = new-object -comObject "MOM.ScriptAPI"
-LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Script has started, loglevel is set to: $LogLevelText"
+LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "SCOM script API created"
 
 $oPropertyBag = $oAPI.CreatePropertyBag()
 
@@ -244,7 +244,7 @@ if($checker -ne $null)
 				$ComputerNameNetbios = $ComputerName.split(".")[0]
 				LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Trying to connect through WinRM using computer name:  $ComputerNameNetbios to get get number of CPU cores data from WMI"
 				# Try to use netbios computer name instead of FQDN/DNS
-				$checker = Get-CimInstance -ComputerName $ComputerNameNetbios -Namespace "root\cimv2" -Class "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction SilentlyContinue -ErrorVariable wbemError
+				$processorList = Get-CimInstance -ComputerName $ComputerNameNetbios -Namespace "root\cimv2" -Class "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction SilentlyContinue -ErrorVariable wbemError
 
 				if($wbemError) {
 					# Log Error as Info in eventlog
@@ -252,7 +252,7 @@ if($checker -ne $null)
 					$wbemError = $Null
 					LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Using COM to get number of CPU cores data instead of WinRM"
 					# Use COM instead if all WinRM connection attempts fail
-					$checker = Get-CimInstance -Namespace "root\cimv2" -Class "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction Stop
+					$processorList = Get-CimInstance -Namespace "root\cimv2" -Class "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction Stop
 				}
 			}
         }
