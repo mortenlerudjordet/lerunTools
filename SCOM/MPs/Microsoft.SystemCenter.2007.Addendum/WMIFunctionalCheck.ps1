@@ -192,7 +192,7 @@ Switch($LogLevelText)
 }
 
 # Alternate way to write to eventlog for SCOM
-Write-EventLog -EventId $EventId -LogName 'Operations Manager' -Source 'Health Service Script' -EntryType Information -Message "$SCRIPT_NAME loglevel is set to: $LogLevelText translated to number: $LogLevel" -ErrorAction SilentlyContinue
+Write-EventLog -EventId $EventId -LogName 'Operations Manager' -Source 'Health Service Script' -EntryType Information -Message "$SCRIPT_NAME loglevel is set to: $LogLevelText" -ErrorAction SilentlyContinue
 
 #Check the OS version
 $isHigherThanWin08 = CheckByOSCurrentVersion
