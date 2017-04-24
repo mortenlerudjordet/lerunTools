@@ -229,6 +229,7 @@ else
 
 if($checker -ne $null)
 {
+    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Result from WMI check: $checker"
     for($counter=0;$counter -lt $retryAttempts;$counter++)
     {
         # Get the number of cores in the system
@@ -262,6 +263,7 @@ if($checker -ne $null)
         }
         if($processorList -ne $null)
         {
+            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "WMI query successful.`nNumber of cores found: $($processorList.NumberOfCores)"
             foreach($processor in $processorList)
             {
                 $procCount = $procCount + $processor.NumberOfCores
@@ -320,6 +322,7 @@ if($checker -ne $null)
             }
             if($processes -ne $null)
             {
+                LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Number of active processes found: $($processes.Count).`nStarting search for the ones related to HealthService"
                 # Step 2: Get the Health Service and Monitoring Host objects
                 foreach($process in $processes)
                 {
@@ -355,11 +358,13 @@ if($checker -ne $null)
                             }
                         }
                     }
-                }While($childFound -eq $true)
+                }
+                While($childFound -eq $true)
 
                 # Step 4: Get the total cpu percentage used for all the SCOM processes
                 if($isHigherThanWin08 -eq $true)
                 {
+                    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Getting the total cpu percentage used for all the SCOM processes"
                     $wmiService =  Get-CimInstance -Namespace "root\cimv2" -ComputerName $ComputerName -Class Win32_PerfFormattedData_PerfProc_Process -ErrorAction SilentlyContinue -ErrorVariable wbemError
 
 					if($wbemError) {
