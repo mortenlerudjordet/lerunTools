@@ -43,9 +43,9 @@
           <OperationalState ID="CPUTimeUnderThreshold" MonitorTypeStateID="UnderThreshold" HealthState="Success" />
         </OperationalStates>
         <Configuration>
-          <IntervalSeconds>321</IntervalSeconds>
+          <IntervalSeconds>300</IntervalSeconds>
           <TimeoutSeconds>300</TimeoutSeconds>
-          <SyncTime>00:00</SyncTime>
+          <SpreadTimeSeconds>300</SpreadTimeSeconds>
           <ComputerName>$Target/Host/Property[Type="Windows!Microsoft.Windows.Computer"]/PrincipalName$</ComputerName>
           <Threshold>25</Threshold>
           <ConsecutiveSampleCountCritical>6</ConsecutiveSampleCountCritical>

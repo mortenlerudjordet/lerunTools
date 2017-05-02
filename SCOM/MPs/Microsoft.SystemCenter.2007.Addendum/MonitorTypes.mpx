@@ -101,7 +101,7 @@
         <Configuration>
           <xsd:element minOccurs="1" name="IntervalSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
           <xsd:element minOccurs="1" name="TimeoutSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
-          <xsd:element minOccurs="0" name="SyncTime" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+          <xsd:element minOccurs="0" name="SpreadTimeSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
           <xsd:element minOccurs="1" name="ComputerName" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
           <xsd:element minOccurs="1" name="Threshold" type="xsd:double" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
           <xsd:element minOccurs="1" name="ConsecutiveSampleCountCritical" type="xsd:double" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
@@ -111,7 +111,7 @@
         <OverrideableParameters>
           <OverrideableParameter ID="IntervalSeconds" Selector="$Config/IntervalSeconds$" ParameterType="int" />
           <OverrideableParameter ID="TimeoutSeconds" Selector="$Config/TimeoutSeconds$" ParameterType="int" />
-          <OverrideableParameter ID="SyncTime" Selector="$Config/SyncTime$" ParameterType="string" />
+          <OverrideableParameter ID="SpreadTimeSeconds" Selector="$Config/SpreadTimeSeconds$" ParameterType="int" />
           <OverrideableParameter ID="Threshold" Selector="$Config/Threshold$" ParameterType="double" />
           <OverrideableParameter ID="ConsecutiveSampleCountCritical" Selector="$Config/ConsecutiveSampleCountCritical$" ParameterType="double" />
           <OverrideableParameter ID="ConsecutiveSampleCountHealthy" Selector="$Config/ConsecutiveSampleCountHealthy$" ParameterType="double" />
@@ -122,7 +122,7 @@
             <DataSource ID="DS" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.DataSource">
               <IntervalSeconds>$Config/IntervalSeconds$</IntervalSeconds>
               <TimeoutSeconds>$Config/TimeoutSeconds$</TimeoutSeconds>
-              <SyncTime>$Config/SyncTime$</SyncTime>
+              <SpreadTimeSeconds>$Config/SpreadTimeSeconds$</SpreadTimeSeconds>
               <ComputerName>$Config/ComputerName$</ComputerName>
               <LogLevelText>$Config/LogLevelText$</LogLevelText>
             </DataSource>
@@ -250,8 +250,8 @@
         <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="OverThreshold">
           <Name>Over Threshold</Name>
         </DisplayString>
-        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="SyncTime">
-          <Name>Synchronization time</Name>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="SpreadTimeSeconds">
+          <Name>Spread Interval Seconds</Name>
         </DisplayString>
         <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="Threshold">
           <Name>Threshold</Name>

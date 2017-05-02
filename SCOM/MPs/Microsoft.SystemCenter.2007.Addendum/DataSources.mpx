@@ -5,22 +5,27 @@
         <Configuration>
           <xsd:element minOccurs="1" name="IntervalSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
           <xsd:element minOccurs="1" name="TimeoutSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
-          <xsd:element minOccurs="0" name="SyncTime" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />          
+          <xsd:element minOccurs="0" name="SpreadTimeSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />          
           <xsd:element minOccurs="1" name="ComputerName" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
           <xsd:element minOccurs="1" name="LogLevelText" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
         </Configuration>
         <OverrideableParameters>
           <OverrideableParameter ID="IntervalSeconds" Selector="$Config/IntervalSeconds$" ParameterType="int" />
           <OverrideableParameter ID="TimeoutSeconds" Selector="$Config/TimeoutSeconds$" ParameterType="int" />
-          <OverrideableParameter ID="SyncTime" Selector="$Config/SyncTime$" ParameterType="string" />
-          <OverrideableParameter ID="LogLevelText" Selector="$Config/LogLevelText$" ParameterType="string"/>
+          <OverrideableParameter ID="SpreadTimeSeconds" Selector="$Config/SpreadTimeSeconds$" ParameterType="int" />
+          <OverrideableParameter ID="LogLevelText" Selector="$Config/LogLevelText$" ParameterType="string"/>          
         </OverrideableParameters>
         <ModuleImplementation Isolation="Any">
           <Composite>
             <MemberModules>
-              <DataSource ID="Scheduler" TypeID="System!System.SimpleScheduler">
-                <IntervalSeconds>$Config/IntervalSeconds$</IntervalSeconds>
-                <SyncTime>$Config/SyncTime$</SyncTime>
+              <DataSource ID="Scheduler" TypeID="System!System.Scheduler">
+                <Scheduler>
+                  <SimpleReccuringSchedule>
+                    <Interval>$Config/IntervalSeconds$</Interval>
+                    <SpreadInitializationOverInterval Unit="Seconds">$Config/SpreadTimeSeconds$</SpreadInitializationOverInterval>
+                  </SimpleReccuringSchedule>
+                  <ExcludeDates />
+                </Scheduler>                
               </DataSource>
               <ProbeAction ID="Probe" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.Probe">
                 <TimeoutSeconds>$Config/TimeoutSeconds$</TimeoutSeconds>                
@@ -49,8 +54,8 @@
         <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.DataSource" SubElementID="IntervalSeconds">
           <Name>Frequency (seconds)</Name>
         </DisplayString>
-        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.DataSource" SubElementID="SyncTime">
-          <Name>Synchronization time</Name>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.DataSource" SubElementID="SpreadTimeSeconds">
+          <Name>Spread Interval Seconds</Name>
         </DisplayString>
         <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.DataSource" SubElementID="TimeoutSeconds">
           <Name>Timeout (seconds)</Name>
