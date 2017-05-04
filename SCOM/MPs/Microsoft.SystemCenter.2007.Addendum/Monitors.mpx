@@ -23,7 +23,7 @@
         <Configuration>
           <IntervalSeconds>86400</IntervalSeconds>
           <TimeoutSeconds>300</TimeoutSeconds>
-          <LogLevelText>Information</LogLevelText>
+          <LogLevelText>Error</LogLevelText>
         </Configuration>
       </UnitMonitor>
       <UnitMonitor ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum" Accessibility="Public" Enabled="false" Target="SCLibrary!Microsoft.SystemCenter.HealthService" ParentMonitorID="Microsoft.SystemCenter.HealthService.PerformanceHealthRollupAddendum" Remotable="false" Priority="Normal" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" ConfirmDelivery="true">
@@ -50,7 +50,7 @@
           <Threshold>25</Threshold>
           <ConsecutiveSampleCountCritical>6</ConsecutiveSampleCountCritical>
           <ConsecutiveSampleCountHealthy>3</ConsecutiveSampleCountHealthy>
-          <LogLevelText>Information</LogLevelText>
+          <LogLevelText>Error</LogLevelText>
         </Configuration>
       </UnitMonitor>
     </Monitors>
