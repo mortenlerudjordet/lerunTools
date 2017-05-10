@@ -147,6 +147,11 @@ $PercentProcessorTime   = 0
 
 }
 
+#---------------------------------------------------------------------------
+# Main
+#---------------------------------------------------------------------------
+$Time = [System.Diagnostics.Stopwatch]::StartNew()
+
 Switch($LogLevelText)
 {
     'Error' {
@@ -457,4 +462,5 @@ if($ConfigForRun -eq $false)
     $oPropertyBag.AddValue("SCOMpercentageCPUTime", $finalPercentProcessorTime)
 }
 $oPropertyBag
-LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Script Finished"
+$Time.Stop()
+LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Script Finished.`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"

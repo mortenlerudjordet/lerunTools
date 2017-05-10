@@ -168,6 +168,8 @@ Param(
 # Main
 #---------------------------------------------------------------------------
 
+$Time = [System.Diagnostics.Stopwatch]::StartNew()
+
 #Define local event constants
 $SCRIPT_NAME    = 'WMIFunctionalCheck.ps1'
 $EVENT_ERROR 	= 1
@@ -219,4 +221,5 @@ else
     $strMessageToUse = "Script WMIFunctionalCheck executed Successfully"
     ReturnResponse -ErrorFlag $false -Message $strMessageToUse
 }
-LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script Finished"
+$Time.Stop()
+LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script Finished`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
