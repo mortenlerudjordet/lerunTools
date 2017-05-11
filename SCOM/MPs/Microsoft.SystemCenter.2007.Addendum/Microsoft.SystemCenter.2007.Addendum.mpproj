@@ -4,9 +4,9 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ProjectGuid>{d8ecdb71-3cef-45d7-9d7c-567957ac392d}</ProjectGuid>
     <RootNamespace>Microsoft.SystemCenter.2007.Addendum</RootNamespace>
-    <Name>Microsoft.SystemCenter.2007.Addendum</Name>
+    <Name>Microsoft SystemCenter 2007 Addendum</Name>
     <ManagementPackName>Microsoft.SystemCenter.2007.Addendum</ManagementPackName>
-    <Version>1.0.1.0</Version>
+    <Version>1.0.2.0</Version>
     <MpFrameworkVersion>v7.0.2</MpFrameworkVersion>
     <MpFrameworkProfile>OM</MpFrameworkProfile>
     <ProductVersion>1.1.0.0</ProductVersion>
@@ -30,6 +30,18 @@
     <AssemblyOriginatorKeyFile />
   </PropertyGroup>
   <ItemGroup>
+    <ManagementPackReference Include="Microsoft.SystemCenter.2007">
+      <HintPath>C:\Program Files (x86)\System Center Visual Studio Authoring Extensions\References\OM2016\Microsoft.SystemCenter.2007.mp</HintPath>
+      <Alias>Core</Alias>
+      <MinVersion>7.2.11822.0</MinVersion>
+      <PackageToBundle>False</PackageToBundle>
+    </ManagementPackReference>
+    <ManagementPackReference Include="Microsoft.SystemCenter.DataWarehouse.Library">
+      <HintPath>C:\Program Files (x86)\System Center Visual Studio Authoring Extensions\References\OM2016\Microsoft.SystemCenter.DataWarehouse.Library.mp</HintPath>
+      <Alias>DWLibrary</Alias>
+      <MinVersion>7.2.11719.0</MinVersion>
+      <PackageToBundle>False</PackageToBundle>
+    </ManagementPackReference>
     <ManagementPackReference Include="Microsoft.SystemCenter.Library">
       <Alias>SCLibrary</Alias>
       <PackageToBundle>False</PackageToBundle>
@@ -71,6 +83,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProbeActionModuleTypes.mpx">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rules.mpx">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

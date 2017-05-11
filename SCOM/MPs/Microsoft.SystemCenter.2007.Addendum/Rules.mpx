@@ -1,0 +1,32 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Monitoring>
+    <Rules>
+      <Rule ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCollectionAddendum" Enabled="true" Target="SCLibrary!Microsoft.SystemCenter.HealthService" ConfirmDelivery="true" Remotable="false" Priority="Normal" DiscardLevel="100">
+        <Category>PerformanceCollection</Category>
+        <DataSources>
+          <DataSource ID="DS" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterAddendum.DataSource">
+            <IntervalSeconds>300</IntervalSeconds>
+            <TimeoutSeconds>300</TimeoutSeconds>
+            <SpreadTimeSeconds>300</SpreadTimeSeconds>
+            <ComputerName>$Target/Host/Property[Type="Windows!Microsoft.Windows.Computer"]/PrincipalName$</ComputerName>
+            <LogLevelText>Information</LogLevelText>
+          </DataSource>
+        </DataSources>
+        <WriteActions>
+          <WriteAction ID="WriteToDB" TypeID="SCLibrary!Microsoft.SystemCenter.CollectPerformanceData" />
+          <WriteAction ID="WriteToDW" TypeID="DWLibrary!Microsoft.SystemCenter.DataWarehouse.PublishPerformanceData" />
+        </WriteActions>
+      </Rule>
+    </Rules>
+  </Monitoring>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCollectionAddendum">
+          <Name>Collect agent processor utilization addendum</Name>
+          <Description>Collects the "agent processor utilization" performance counter</Description>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>        
+</ManagementPackFragment>

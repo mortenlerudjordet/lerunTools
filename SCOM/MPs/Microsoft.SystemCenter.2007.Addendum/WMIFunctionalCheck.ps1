@@ -49,9 +49,27 @@ Param(
 
 $LogMessage = "`n" + $LogMessage
 if($EventType -le $LogLevel)
-  {
-	$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,$EventType,$LogMessage)
-  }
+{
+	Switch($EventType)
+	{
+		1 {
+			# Error
+			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
+		}
+		2 {
+			# Warning
+			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
+		}
+		4 {
+			# Information
+			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
+		}
+		5 {
+			# Debug
+			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
+		}		
+	}
+}
 }
 
 #---------------------------------------------------------------------------
@@ -73,7 +91,7 @@ Param(
     else
     {
         $propertyBag.AddValue("Status", "OK")
-        LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage $Message
+        LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage $Message
     }
 
     $propertyBag
@@ -101,26 +119,26 @@ if($isHigherThanWin08 -eq $true)
 		    # Stop if one cannot use Get-CimInstance CMDlet
             Import-Module -Name cimcmdlets -ErrorAction Stop
 	    }
-        LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Trying to connect through WinRM using computer name:  $targetComputer to get data from WMI"
+        LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $targetComputer to get data from WMI"
         $wbemObjectSet = Get-CimInstance -ComputerName $targetComputer -Namespace $("root\" + $BaseClass) -Query $Query -ErrorAction SilentlyContinue -ErrorVariable wbemError
 
         if($wbemError) {
             $error.Clear()
             # Log Error as Info in eventlog
-            LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage $wbemError
+            LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage $wbemError
             $wbemError = $Null
             # Get netbios name from FQDN
             $targetComputerNetbios = $targetComputer.split(".")[0]
-            LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Trying to connect through WinRM using computer name:  $targetComputerNetbios to get data from WMI"
+            LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $targetComputerNetbios to get data from WMI"
             # Try to use netbios computer name instead of FQDN/DNS
             $wbemObjectSet = Get-CimInstance -ComputerName $targetComputerNetbios -Namespace $("root\" + $BaseClass) -Query $Query -ErrorAction SilentlyContinue -ErrorVariable wbemError
 
             if($wbemError) {
                 $error.Clear()
                 # Log Error as Info in eventlog
-                LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage $wbemError
+                LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage $wbemError
                 $wbemError = $Null
-                LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Using COM to get WMI data instead of WinRM"
+                LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Using COM to get WMI data instead of WinRM"
                 # Use COM instead if all WinRM connection attempts fail
                 $wbemObjectSet = Get-CimInstance -Namespace $("root\" + $BaseClass) -Query $Query -ErrorAction Continue
             }
@@ -175,6 +193,7 @@ $SCRIPT_NAME    = 'WMIFunctionalCheck.ps1'
 $EVENT_ERROR 	= 1
 $EVENT_WARNING 	= 2
 $EVENT_INFO     = 4
+$EVENT_DEBUG    = 5
 $EventId        = 150
 
 Switch($LogLevelText)
@@ -188,29 +207,32 @@ Switch($LogLevelText)
     'Information' {
         $LogLevel = 4
     }
+	'Debug' {
+        $LogLevel = 5
+    }
     Default {
         $LogLevel = 1
     }
 }
 
 # Alternate way to write to eventlog for SCOM
-Write-EventLog -EventId $EventId -LogName 'Operations Manager' -Source 'Health Service Script' -EntryType Information -Message "$SCRIPT_NAME loglevel is set to: $LogLevelText" -ErrorAction SilentlyContinue
+Write-EventLog -EventId $EventId -LogName 'Operations Manager' -Source 'Health Service Script' -EntryType Information -Message "$($SCRIPT_NAME): Executing with loglevel: $LogLevelText" -ErrorAction SilentlyContinue
 
 #Check the OS version
 $isHigherThanWin08 = CheckByOSCurrentVersion
 
 #Create PropertyBag object
 $SCOMapi = new-object -comObject "MOM.ScriptAPI"
-LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "SCOM script API created"
+LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Time started: $((Get-Date).ToString("HH:mm:ss"))"
 
 $propertyBag = $SCOMapi.CreatePropertyBag()
 
 $error.Clear()
 
 #Set variables
-LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Retrieving WMI Status"
+LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Retrieving WMI Status"
 $strWMIStatus = GetWMIStatus -ComputerName $ComputerName
-LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "WMI Status: $strWMIStatus"
+LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "WMI Status: $strWMIStatus"
 if($error.Count -ne 0)
 {
     $strMessageToUse = "Script WMIFunctionalCheck executed with Errors.`nError Details: " + $error[0]

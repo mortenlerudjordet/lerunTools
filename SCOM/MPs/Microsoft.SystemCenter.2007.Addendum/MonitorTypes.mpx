@@ -232,7 +232,7 @@
         </DisplayString>
         <DisplayString ElementID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" SubElementID="LogLevelText">
           <Name>Level to log</Name>
-          <Description>Use Information, Warning or Error to set the level of logging for probe script</Description>
+          <Description>Use Debug, Information, Warning or Error to set the level of logging for probe script</Description>
         </DisplayString>
         <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum">
           <Name>Agent processor utilization monitor type</Name>
@@ -264,7 +264,7 @@
         </DisplayString>
         <DisplayString ElementID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" SubElementID="LogLevelText">
           <Name>Level to log</Name>
-          <Description>Use Information, Warning or Error to set the level of logging for probe script</Description>
+          <Description>Use Debug, Information, Warning or Error to set the level of logging for probe script</Description>
         </DisplayString>
       </DisplayStrings>
     </LanguagePack>

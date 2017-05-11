@@ -5,7 +5,7 @@
         <Category>PerformanceCollection</Category>
         <Algorithm>WorstOf</Algorithm>
       </AggregateMonitor>
-      <UnitMonitor ID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum" Accessibility="Public" Enabled="false" Target="SCLibrary!Microsoft.SystemCenter.Agent" ParentMonitorID="Health!System.Health.ConfigurationState" Remotable="true" Priority="Normal" TypeID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" ConfirmDelivery="false">
+      <UnitMonitor ID="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum" Accessibility="Public" Enabled="true" Target="SCLibrary!Microsoft.SystemCenter.Agent" ParentMonitorID="Health!System.Health.ConfigurationState" Remotable="true" Priority="Normal" TypeID="Microsoft.OperationsManager.WMIFunctionalAddendum.MonitorType" ConfirmDelivery="false">
         <Category>StateCollection</Category>
         <AlertSettings AlertMessage="Microsoft.SystemCenter.WMIFunctionalMonitorAddendum.AlertMessage">
           <AlertOnState>Error</AlertOnState>
@@ -23,10 +23,10 @@
         <Configuration>
           <IntervalSeconds>86400</IntervalSeconds>
           <TimeoutSeconds>300</TimeoutSeconds>
-          <LogLevelText>Error</LogLevelText>
+          <LogLevelText>Information</LogLevelText>
         </Configuration>
       </UnitMonitor>
-      <UnitMonitor ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum" Accessibility="Public" Enabled="false" Target="SCLibrary!Microsoft.SystemCenter.HealthService" ParentMonitorID="Microsoft.SystemCenter.HealthService.PerformanceHealthRollupAddendum" Remotable="false" Priority="Normal" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" ConfirmDelivery="true">
+      <UnitMonitor ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum" Accessibility="Public" Enabled="true" Target="SCLibrary!Microsoft.SystemCenter.HealthService" ParentMonitorID="Microsoft.SystemCenter.HealthService.PerformanceHealthRollupAddendum" Remotable="false" Priority="Normal" TypeID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCounterMonitorTypeAddendum" ConfirmDelivery="true">
         <Category>Custom</Category>
         <AlertSettings AlertMessage="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.AlertMessage">
           <AlertOnState>Error</AlertOnState>
@@ -50,7 +50,7 @@
           <Threshold>25</Threshold>
           <ConsecutiveSampleCountCritical>6</ConsecutiveSampleCountCritical>
           <ConsecutiveSampleCountHealthy>3</ConsecutiveSampleCountHealthy>
-          <LogLevelText>Error</LogLevelText>
+          <LogLevelText>Information</LogLevelText>
         </Configuration>
       </UnitMonitor>
     </Monitors>
@@ -58,6 +58,15 @@
       <MonitorPropertyOverride ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.DisableForManagementServer" Context="SCLibrary!Microsoft.SystemCenter.ManagementServerComputersGroup" Enforced="false" Monitor="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum" Property="Enabled">
         <Value>false</Value>
       </MonitorPropertyOverride>
+      <MonitorPropertyOverride ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.DisableOriginalWMIMon" Context="SCLibrary!Microsoft.SystemCenter.Agent" Enforced="false" Monitor="Core!Microsoft.SystemCenter.WMIFunctionalMonitor" Property="Enabled">
+        <Value>false</Value>
+      </MonitorPropertyOverride>
+      <MonitorPropertyOverride ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.DisableOriginalCPUCollectMon" Context="SCLibrary!Microsoft.SystemCenter.HealthService" Enforced="false" Monitor="Core!Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitor" Property="Enabled">
+        <Value>false</Value>
+      </MonitorPropertyOverride>
+      <RulePropertyOverride ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.DisableOriginalCPUCollectRule" Context="SCLibrary!Microsoft.SystemCenter.HealthService" Enforced="false" Rule="Core!Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCollection" Property="Enabled">
+        <Value>false</Value>
+      </RulePropertyOverride>
     </Overrides>
   </Monitoring>
   <Presentation>
