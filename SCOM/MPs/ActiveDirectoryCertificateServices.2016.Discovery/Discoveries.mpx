@@ -1,0 +1,26 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Monitoring>
+    <Discoveries>
+      <Discovery ID="Microsoft.Windows.CertificateServices.CARoleHosting2016.Discovery" Enabled="onEssentialMonitoring" Target="WindowsServerDiscovery!Microsoft.Windows.Server.10.0.Computer" ConfirmDelivery="true" Remotable="true" Priority="Normal">
+        <Category>Discovery</Category>
+        <DiscoveryTypes>
+          <DiscoveryClass TypeID="CS!Microsoft.Windows.CertificateServices.CARole" />
+          <DiscoveryClass TypeID="CSD!Microsoft.Windows.CertificateServices.CARole.6.3" />
+        </DiscoveryTypes>
+        <DataSource ID="DS" TypeID="Microsoft.Windows.CertificateServices.CARoleHosting2016.DataSource">
+          <IntervalSeconds>14400</IntervalSeconds>
+        </DataSource>
+      </Discovery>      
+    </Discoveries>
+  </Monitoring>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="Microsoft.Windows.CertificateServices.CARoleHosting2016.Discovery">
+          <Name>Certificate Service Hosting 2016 Discovery</Name>
+          <Description>Certificate Service Hosting Discovery</Description>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>      
+</ManagementPackFragment>

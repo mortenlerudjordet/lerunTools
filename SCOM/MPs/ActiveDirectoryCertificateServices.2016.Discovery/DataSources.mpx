@@ -1,0 +1,87 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <TypeDefinitions>
+    <ModuleTypes>
+            <DataSourceModuleType ID="Microsoft.Windows.CertificateServices.CARoleHosting2016.DataSource" Accessibility="Internal" Batching="false">
+        <Configuration>
+          <xsd:element minOccurs="1" name="IntervalSeconds" type="xsd:integer" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+        </Configuration>
+        <OverrideableParameters>
+          <OverrideableParameter ID="IntervalSeconds" Selector="$Config/IntervalSeconds$" ParameterType="int" />
+        </OverrideableParameters>
+        <ModuleImplementation Isolation="Any">
+          <Composite>
+            <MemberModules>
+              <DataSource ID="DS" TypeID="Windows!Microsoft.Windows.FilteredRegistryDiscoveryProvider">
+                <ComputerName>$Target/Property[Type="Windows!Microsoft.Windows.Computer"]/NetworkName$</ComputerName>
+                <RegistryAttributeDefinitions>
+                  <RegistryAttributeDefinition>
+                    <AttributeName>CertSvcExists</AttributeName>
+                    <Path>SYSTEM\CurrentControlSet\Services\CertSvc</Path>
+                    <PathType>0</PathType>
+                    <AttributeType>0</AttributeType>
+                  </RegistryAttributeDefinition>
+                  <RegistryAttributeDefinition>
+                    <AttributeName>WindowsCurrentVersion</AttributeName>
+                    <Path>SOFTWARE\Microsoft\Windows NT\CurrentVersion\CurrentVersion</Path>
+                    <PathType>1</PathType>
+                    <AttributeType>1</AttributeType>
+                  </RegistryAttributeDefinition>
+                </RegistryAttributeDefinitions>
+                <Frequency>$Config/IntervalSeconds$</Frequency>
+                <ClassId>$MPElement[Name="CSD!Microsoft.Windows.CertificateServices.CARole.6.3"]$</ClassId>
+                <InstanceSettings>
+                  <Settings>
+                    <Setting>
+                      <Name>$MPElement[Name="Windows!Microsoft.Windows.Computer"]/PrincipalName$</Name>
+                      <Value>$Target/Property[Type="Windows!Microsoft.Windows.Computer"]/PrincipalName$</Value>
+                    </Setting>
+                  </Settings>
+                </InstanceSettings>
+                <Expression>
+                  <And>
+                    <Expression>
+                      <SimpleExpression>
+                        <ValueExpression>
+                          <XPathQuery Type="Boolean">Values/CertSvcExists</XPathQuery>
+                        </ValueExpression>
+                        <Operator>Equal</Operator>
+                        <ValueExpression>
+                          <Value Type="Boolean">true</Value>
+                        </ValueExpression>
+                      </SimpleExpression>
+                    </Expression>
+                    <Expression>
+                      <SimpleExpression>
+                        <ValueExpression>
+                          <XPathQuery Type="String">Values/WindowsCurrentVersion</XPathQuery>
+                        </ValueExpression>
+                        <Operator>Equal</Operator>
+                        <ValueExpression>
+                          <Value Type="String">6.3</Value>
+                        </ValueExpression>
+                      </SimpleExpression>
+                    </Expression>
+                  </And>
+                </Expression>
+              </DataSource>
+            </MemberModules>
+            <Composition>
+              <Node ID="DS" />
+            </Composition>
+          </Composite>
+        </ModuleImplementation>
+        <OutputType>System!System.Discovery.Data</OutputType>
+      </DataSourceModuleType>
+    </ModuleTypes>
+  </TypeDefinitions>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="Microsoft.Windows.CertificateServices.CARoleHosting2016.DataSource">
+          <Name>Certificate Service Hosting 2016 Discovery Data Source</Name>
+          <Description>Certificate Service Hosting Discovery Data Source</Description>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>
