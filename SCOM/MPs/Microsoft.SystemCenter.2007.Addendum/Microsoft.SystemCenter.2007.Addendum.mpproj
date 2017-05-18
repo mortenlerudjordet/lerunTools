@@ -31,7 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ManagementPackReference Include="Microsoft.SystemCenter.2007">
-      <HintPath>C:\Program Files (x86)\System Center Visual Studio Authoring Extensions\References\OM2016\Microsoft.SystemCenter.2007.mp</HintPath>
+      <HintPath>C:\GIT\lerunTools\SCOM\MPs\Microsoft.SystemCenter.2007.Addendum\MpLib\Microsoft.SystemCenter.2007.mp</HintPath>
       <Alias>Core</Alias>
       <MinVersion>7.2.11822.0</MinVersion>
       <PackageToBundle>False</PackageToBundle>
@@ -92,6 +92,14 @@
   <ItemGroup>
     <EmbeddedResource Include="SCOMpercentageCPUTimeCounter.ps1" />
     <EmbeddedResource Include="WMIFunctionalCheck.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MpLib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="MpLib\Microsoft.SystemCenter.2007.mp">
+      <SubType>Content</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VSAC\Microsoft.SystemCenter.OperationsManager.targets" />
 </Project>
