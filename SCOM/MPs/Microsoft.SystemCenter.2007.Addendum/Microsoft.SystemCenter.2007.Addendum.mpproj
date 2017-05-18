@@ -31,13 +31,13 @@
   </PropertyGroup>
   <ItemGroup>
     <ManagementPackReference Include="Microsoft.SystemCenter.2007">
-      <HintPath>C:\GIT\lerunTools\SCOM\MPs\Microsoft.SystemCenter.2007.Addendum\MpLib\Microsoft.SystemCenter.2007.mp</HintPath>
+      <HintPath>.\MpLib\Microsoft.SystemCenter.2007.mp</HintPath>
       <Alias>Core</Alias>
       <MinVersion>7.2.11822.0</MinVersion>
       <PackageToBundle>False</PackageToBundle>
     </ManagementPackReference>
     <ManagementPackReference Include="Microsoft.SystemCenter.DataWarehouse.Library">
-      <HintPath>C:\Program Files (x86)\System Center Visual Studio Authoring Extensions\References\OM2016\Microsoft.SystemCenter.DataWarehouse.Library.mp</HintPath>
+      <HintPath>.\MpLib\Microsoft.SystemCenter.DataWarehouse.Library.mp</HintPath>
       <Alias>DWLibrary</Alias>
       <MinVersion>7.2.11719.0</MinVersion>
       <PackageToBundle>False</PackageToBundle>
