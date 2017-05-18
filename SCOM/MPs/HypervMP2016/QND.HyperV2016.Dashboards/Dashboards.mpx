@@ -1,0 +1,118 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Presentation>
+    <Folders>
+      <Folder ID="QND.Hyperv.2016.Dashboard.Folder" Accessibility="Public" ParentFolder="SC!Microsoft.SystemCenter.Monitoring.ViewFolder.Root" />
+    </Folders>
+    <ComponentTypes>
+      <ComponentType ID="QND.Hyperv.2016.VirtualDrive.GridLayout" Accessibility="Public" Base="Visualization!Microsoft.SystemCenter.Visualization.GridLayout" Lifetime="ManagementPackElement" />
+      <ComponentType ID="QND.Hyperv.2016.VM.TopSnapshotAge" Accessibility="Public" Base="QND.Hyperv2016!QND.Hyperv.StateWidget.Template" Lifetime="ManagementPackElement" />
+      <ComponentType ID="QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs" Accessibility="Public" Base="QND.Hyperv2016!QND.Hyperv.StateWidget.Template" Lifetime="ReferenceCount" />
+    </ComponentTypes>
+    <ComponentReferences>
+      <ComponentReference ID="QND.Hyperv.2016.VirtualDrive.GridLayout.Reference" Accessibility="Public" TypeID="QND.Hyperv.2016.VirtualDrive.GridLayout" Parent="QND.Hyperv.2016.Dashboard.Folder" />
+      <ComponentReference ID="QND.Hyperv.2016.VM.TopSnapshotAge.Reference" Accessibility="Public" TypeID="QND.Hyperv.2016.VM.TopSnapshotAge" Parent="QND.Hyperv.2016.VirtualDrive.GridLayout" />
+      <ComponentReference ID="QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs.Reference" Accessibility="Public" TypeID="QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs" Parent="QND.Hyperv.2016.VirtualDrive.GridLayout" />     
+    </ComponentReferences>
+    <ComponentOverrides>
+      <ComponentOverride ID="QND.Hyperv.2016.VirtualDrive.GridLayout.Override" TypeID="QND.Hyperv.2016.VirtualDrive.GridLayout">
+        <Bindings>
+          <Binding PropertyId="ConfigType">
+            <SimpleValue Type="xsd://string" Value="Microsoft.SystemCenter.Visualization.Library!GridLayout02CellSplitVerticalConfig" />
+          </Binding>
+          <Binding PropertyId="CellRegionMappings">
+            <ComplexValueCollection Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.LayoutConfig/CellRegionMapping[]">
+              <ComplexValue Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.LayoutConfig/CellRegionMapping">
+                <Binding PropertyId="RegionContent">
+                  <SimpleValue Type="xsd://string" Value="QND.Hyperv2016.Dashboards!QND.Hyperv.2016.VM.TopSnapshotAge.Reference" />
+                </Binding>
+                <Binding PropertyId="RegionId">
+                  <SimpleValue Type="xsd://string" Value="UIGeneratedRegion_646e5f7e360f4f6b93e660c70442345d" />
+                </Binding>
+                <Binding PropertyId="RegionParameters" />
+                <Binding PropertyId="CellIndex">
+                  <SimpleValue Type="xsd://int" Value="0" />
+                </Binding>
+              </ComplexValue>
+              <ComplexValue Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.LayoutConfig/CellRegionMapping">
+                <Binding PropertyId="RegionContent">
+                  <SimpleValue Type="xsd://string" Value="QND.Hyperv2016.Dashboards!QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs.Reference" />
+                </Binding>
+                <Binding PropertyId="RegionId">
+                  <SimpleValue Type="xsd://string" Value="UIGeneratedRegion_d2e5c181a85f42a6aa440c3f066cd122" />
+                </Binding>
+                <Binding PropertyId="RegionParameters" />
+                <Binding PropertyId="CellIndex">
+                  <SimpleValue Type="xsd://int" Value="1" />
+                </Binding>
+              </ComplexValue>
+            </ComplexValueCollection>
+          </Binding>
+        </Bindings>
+      </ComponentOverride>
+      <ComponentOverride ID="QND.Hyperv.2016.VM.TopSnapshotAge.Override" TypeID="QND.Hyperv.2016.VM.TopSnapshotAge" Context="/QND.Hyperv2016.Dashboards!QND.Hyperv.2016.VirtualDrive.GridLayout/Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.GridLayout/Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.GridLayout/UIGeneratedRegion_646e5f7e360f4f6b93e660c70442345d/Microsoft.SystemCenter.Visualization.Library!ComposedRegion/QND.Hyperv2016.Dashboards!QND.Hyperv.2016.VM.TopSnapshotAge/">
+        <Bindings>
+          <Binding PropertyId="Script">
+            <SimpleValue Type="xsd://string" Value="#region Parameters&#xD;&#xA;# Set sample interval Last 24 hours UTC&#xD;&#xA;$aggregationInterval = 24&#xD;&#xA;$TopN = 40&#xD;&#xA;$PerfCounterName = &quot;SnapshotAgeHours&quot;&#xD;&#xA;$RuleDisplayName = &quot;Hyper-V - VM Snapshot Age&quot;&#xD;&#xA;&#xD;&#xA;$Class = Get-SCOMClass -Name 'QND.Hyperv.2016.VM'&#xD;&#xA;$Instances = Get-SCOMClassInstance -class $Class&#xD;&#xA;&#xD;&#xA;$avg_stat = @{}&#xD;&#xA;$dataObjects = @()&#xD;&#xA;#endregion Parameters&#xD;&#xA;#region Functions&#xD;&#xA;function RecalculateMinMaxForAvgStatItem {&#xD;&#xA;param($name,$value)&#xD;&#xA;    $avg_stat[$name][&quot;min&quot;] = ($avg_stat[$name][&quot;min&quot;], $value | Measure-Object -Min).Minimum&#xD;&#xA;    $avg_stat[$name][&quot;max&quot;] = ($avg_stat[$name][&quot;max&quot;], $value | Measure-Object -Max).Maximum&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;function CreateStatistics {&#xD;&#xA;param($value)&#xD;&#xA;    $stat = $ScriptContext.CreateInstance(&quot;xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.DataProvider/PerformanceDataStatistics&quot;)&#xD;&#xA;    if ($value -ne $null) {&#xD;&#xA;        $stat[&quot;AverageValue&quot;] = [double]$value&#xD;&#xA;        $stat[&quot;Value&quot;] = [double]$value&#xD;&#xA;    }&#xD;&#xA;    $stat&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;# Initialize Stat Item:&#xD;&#xA;function InitAvgStatItem {&#xD;&#xA;param($name)&#xD;&#xA;    if($avg_stat[$name] -eq $null) {&#xD;&#xA;        $avg_stat[$name] = @{}&#xD;&#xA;        $avg_stat[$name][&quot;min&quot;] = 0&#xD;&#xA;        $avg_stat[$name][&quot;max&quot;] = [Int32]::MinValue&#xD;&#xA;    }&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;function AddColumnValue {&#xD;&#xA;param($dataObject,$name,$value)&#xD;&#xA;&#xD;&#xA;    $v = $value&#xD;&#xA;&#xD;&#xA;    InitAvgStatItem $name&#xD;&#xA;    if ($v -ne $null) {&#xD;&#xA;        $dataObject[$name] = CreateStatistics($v)&#xD;&#xA;        RecalculateMinMaxForAvgStatItem $name $v&#xD;&#xA;    }&#xD;&#xA;    else&#xD;&#xA;    {&#xD;&#xA;        $dataObject[$name] = $null&#xD;&#xA;    }&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;function PadCounter {&#xD;&#xA;PARAM([string]$Counter)&#xD;&#xA;    switch ($Counter.length)&#xD;&#xA;    {&#xD;&#xA;            1 {Return [string]&quot;0000$Counter&quot;}&#xD;&#xA;            2 {Return [string]&quot;000$Counter&quot;}&#xD;&#xA;            3 {Return [string]&quot;00$Counter&quot;}&#xD;&#xA;            4 {Return [string]&quot;0$Counter&quot;}&#xD;&#xA;            5 {Return [string]&quot;$Counter&quot;}&#xD;&#xA;    }&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;#endregion Functions&#xD;&#xA;&#xD;&#xA;#region Main&#xD;&#xA;&#xD;&#xA;foreach ($Instance in $Instances) {&#xD;&#xA;    $dataObject = $ScriptContext.CreateFromObject($Instance, &quot;Id=Id,State=HealthState&quot;, $null)&#xD;&#xA;    $dataObject[&quot;Name&quot;]= $Instance.DisplayName&#xD;&#xA; $dataObject[&quot;HVFarm&quot;]= $Instance.'[QND.Hyperv.2016.VM].HVFarm'.Value&#xD;&#xA; $dataObject[&quot;HostName&quot;] = $Instance.'[QND.Hyperv.2016.VM].HostName'.Value&#xD;&#xA; $dataObject[&quot;Path&quot;]= $Instance.Name&#xD;&#xA;&#xD;&#xA;    if ($dataObject -ne $null)  {&#xD;&#xA;        $dt = New-TimeSpan -hour $aggregationInterval&#xD;&#xA;        $nowlocal = Get-Date&#xD;&#xA;&#xD;&#xA;        #Convert local time to UTC time&#xD;&#xA;        $now = $nowlocal.ToUniversalTime()&#xD;&#xA;        $from = $now.Subtract($dt)&#xD;&#xA;&#xD;&#xA;        $perfRules = $Instance.GetMonitoringPerformanceData()&#xD;&#xA;        foreach ($perfRule in $perfRules) {&#xD;&#xA;            if($perfRule.CounterName -eq $PerfCounterName -and $perfRule.RuleDisplayName -eq $RuleDisplayName)   {&#xD;&#xA;                $data = $perfRule.GetValues($from, $now) | ForEach-Object { $_.SampleValue } | Measure-Object -Maximum&#xD;&#xA;                AddColumnValue $dataObject $perfRule.CounterName $data.Maximum&#xD;&#xA;            }&#xD;&#xA;        }&#xD;&#xA;        $dataObjects += $dataObject&#xD;&#xA;    }&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;# Sorts array of hashtables on perf counter defined in PerfCounterName on the averagevalue parameter and selects topN of these&#xD;&#xA;# Use Descending parameter to sort from highest to lowest perf value&#xD;&#xA;$ProcessedObjects = $dataObjects | Sort-Object  {$_[$PerfCounterName][&quot;AverageValue&quot;]} -Descending | Select-Object -First $TopN&#xD;&#xA;&#xD;&#xA;$sortIndex = 0&#xD;&#xA;foreach ($dataObject in $ProcessedObjects)&#xD;&#xA;{&#xD;&#xA;    foreach ($metric in $avg_stat.Keys)&#xD;&#xA;    {&#xD;&#xA;        $stat = $avg_stat[$metric]&#xD;&#xA;        $dataObject[$metric][&quot;MinimumValue&quot;] = [double]$stat[&quot;min&quot;]&#xD;&#xA;&#xD;&#xA;        if ($stat[&quot;max&quot;] -ne [Int32]::MinValue)&#xD;&#xA;        {&#xD;&#xA;            $dataObject[$metric][&quot;MaximumValue&quot;] = [double]$stat[&quot;max&quot;]&#xD;&#xA;        }&#xD;&#xA;        else&#xD;&#xA;        {&#xD;&#xA;            $dataObject[$metric][&quot;MaximumValue&quot;] = [double]0&#xD;&#xA;        }&#xD;&#xA;    }&#xD;&#xA;    # Fix how objects are displayed and sorted in the dashboard, must use state as this is used as default sort column for widget&#xD;&#xA;    # Use ID if Powershell Widget, or State if using Sample Blue bar Widget&#xD;&#xA;    $dataObject[&quot;State&quot;] = [string](PadCounter -Counter $sortIndex)&#xD;&#xA;&#xD;&#xA;    $ScriptContext.ReturnCollection.Add($dataObject)&#xD;&#xA;    # Increment counter&#xD;&#xA;    $sortIndex++&#xD;&#xA;}&#xD;&#xA;#endregion Main&#xD;&#xA;" />
+          </Binding>
+          <Binding PropertyId="AutoRefreshTickInterval">
+            <SimpleValue Type="xsd://int" Value="600" />
+          </Binding>
+        </Bindings>
+      </ComponentOverride>
+      <ComponentOverride ID="QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs.Override" TypeID="QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs" Context="/QND.Hyperv2016.Dashboards!QND.Hyperv.2016.VirtualDrive.GridLayout/Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.GridLayout/Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.GridLayout/UIGeneratedRegion_d2e5c181a85f42a6aa440c3f066cd122/Microsoft.SystemCenter.Visualization.Library!ComposedRegion/QND.Hyperv2016.Dashboards!QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs/">
+        <Bindings>
+          <Binding PropertyId="Script">
+            <SimpleValue Type="xsd://string" Value="#region Parameters&#xD;&#xA;# Set sample interval Last 3 hours UTC&#xD;&#xA;$aggregationInterval = 3&#xD;&#xA;$TopN = 40&#xD;&#xA;$PerfCounterName = &quot;Fragmentation&quot;&#xD;&#xA;$RuleDisplayName = &quot;Hyper-V - VHD Fragmentation&quot;&#xD;&#xA;&#xD;&#xA;$Class = Get-SCOMClass -Name 'QND.Hyperv.2016.VirtualDrive'&#xD;&#xA;$Instances = Get-SCOMClassInstance -class $Class&#xD;&#xA;&#xD;&#xA;$avg_stat = @{}&#xD;&#xA;$dataObjects = @()&#xD;&#xA;#endregion Parameters&#xD;&#xA;#region Functions&#xD;&#xA;function RecalculateMinMaxForAvgStatItem {&#xD;&#xA;param($name,$value)&#xD;&#xA;    $avg_stat[$name][&quot;min&quot;] = ($avg_stat[$name][&quot;min&quot;], $value | Measure-Object -Min).Minimum&#xD;&#xA;    $avg_stat[$name][&quot;max&quot;] = ($avg_stat[$name][&quot;max&quot;], $value | Measure-Object -Max).Maximum&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;function CreateStatistics {&#xD;&#xA;param($value)&#xD;&#xA;    $stat = $ScriptContext.CreateInstance(&quot;xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.DataProvider/PerformanceDataStatistics&quot;)&#xD;&#xA;    if ($value -ne $null) {&#xD;&#xA;        $stat[&quot;AverageValue&quot;] = [double]$value&#xD;&#xA;        $stat[&quot;Value&quot;] = [double]$value&#xD;&#xA;    }&#xD;&#xA;    $stat&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;# Initialize Stat Item:&#xD;&#xA;function InitAvgStatItem {&#xD;&#xA;param($name)&#xD;&#xA;    if($avg_stat[$name] -eq $null) {&#xD;&#xA;        $avg_stat[$name] = @{}&#xD;&#xA;        $avg_stat[$name][&quot;min&quot;] = 0&#xD;&#xA;        $avg_stat[$name][&quot;max&quot;] = [Int32]::MinValue&#xD;&#xA;    }&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;function AddColumnValue {&#xD;&#xA;param($dataObject,$name,$value)&#xD;&#xA;&#xD;&#xA;    $v = $value&#xD;&#xA;&#xD;&#xA;    InitAvgStatItem $name&#xD;&#xA;    if ($v -ne $null) {&#xD;&#xA;        $dataObject[$name] = CreateStatistics($v)&#xD;&#xA;        RecalculateMinMaxForAvgStatItem $name $v&#xD;&#xA;    }&#xD;&#xA;    else&#xD;&#xA;    {&#xD;&#xA;        $dataObject[$name] = $null&#xD;&#xA;    }&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;function PadCounter {&#xD;&#xA;PARAM([string]$Counter)&#xD;&#xA;    switch ($Counter.length)&#xD;&#xA;    {&#xD;&#xA;            1 {Return [string]&quot;0000$Counter&quot;}&#xD;&#xA;            2 {Return [string]&quot;000$Counter&quot;}&#xD;&#xA;            3 {Return [string]&quot;00$Counter&quot;}&#xD;&#xA;            4 {Return [string]&quot;0$Counter&quot;}&#xD;&#xA;            5 {Return [string]&quot;$Counter&quot;}&#xD;&#xA;    }&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;#endregion Functions&#xD;&#xA;&#xD;&#xA;#region Main&#xD;&#xA;&#xD;&#xA;foreach ($Instance in $Instances) {&#xD;&#xA;    $dataObject = $ScriptContext.CreateFromObject($Instance, &quot;Id=Id,State=HealthState&quot;, $null)&#xD;&#xA;    $dataObject[&quot;Name&quot;]= $Instance.DisplayName&#xD;&#xA;    $dataObject[&quot;Type&quot;] = $Instance.'[QND.Hyperv.2016.VirtualDrive].VHDType'.Value&#xD;&#xA; $dataObject[&quot;MaxSizeGB&quot;] = $Instance.'[QND.Hyperv.2016.VirtualDrive].MaxSizeGB'.Value&#xD;&#xA; $dataObject[&quot;Path&quot;]= $Instance.'[QND.Hyperv.2016.VirtualDrive].ImageFile'.Value &#xD;&#xA;&#xD;&#xA;    if ($dataObject -ne $null)  {&#xD;&#xA;        $dt = New-TimeSpan -hour $aggregationInterval&#xD;&#xA;        $nowlocal = Get-Date&#xD;&#xA;&#xD;&#xA;        #Convert local time to UTC time&#xD;&#xA;        $now = $nowlocal.ToUniversalTime()&#xD;&#xA;        $from = $now.Subtract($dt)&#xD;&#xA;&#xD;&#xA;        $perfRules = $Instance.GetMonitoringPerformanceData()&#xD;&#xA;        foreach ($perfRule in $perfRules) {&#xD;&#xA;            if($perfRule.CounterName -eq $PerfCounterName -and $perfRule.RuleDisplayName -eq $RuleDisplayName)   {&#xD;&#xA;                $data = $perfRule.GetValues($from, $now) | ForEach-Object { $_.SampleValue } | Measure-Object -Average&#xD;&#xA;                AddColumnValue $dataObject $perfRule.CounterName $data.Average&#xD;&#xA;            }&#xD;&#xA;        }&#xD;&#xA;        $dataObjects += $dataObject&#xD;&#xA;    }&#xD;&#xA;}&#xD;&#xA;&#xD;&#xA;# Sorts array of hashtables on perf counter defined in PerfCounterName on the averagevalue parameter and selects topN of these&#xD;&#xA;# Use Descending parameter to sort from highest to lowest perf value&#xD;&#xA;$ProcessedObjects = $dataObjects | Sort-Object  {$_[$PerfCounterName][&quot;AverageValue&quot;]} -Descending | Select-Object -First $TopN&#xD;&#xA;&#xD;&#xA;$sortIndex = 0&#xD;&#xA;foreach ($dataObject in $ProcessedObjects)&#xD;&#xA;{&#xD;&#xA;    foreach ($metric in $avg_stat.Keys)&#xD;&#xA;    {&#xD;&#xA;        $stat = $avg_stat[$metric]&#xD;&#xA;        $dataObject[$metric][&quot;MinimumValue&quot;] = [double]$stat[&quot;min&quot;]&#xD;&#xA;&#xD;&#xA;        if ($stat[&quot;max&quot;] -ne [Int32]::MinValue)&#xD;&#xA;        {&#xD;&#xA;            $dataObject[$metric][&quot;MaximumValue&quot;] = [double]$stat[&quot;max&quot;]&#xD;&#xA;        }&#xD;&#xA;        else&#xD;&#xA;        {&#xD;&#xA;            $dataObject[$metric][&quot;MaximumValue&quot;] = [double]0&#xD;&#xA;        }&#xD;&#xA;    }&#xD;&#xA;    # Fix how objects are displayed and sorted in the dashboard, must use state as this is used as default sort column for widget&#xD;&#xA;    # Use ID if Powershell Widget, or State if using Sample Blue bar Widget&#xD;&#xA;    $dataObject[&quot;State&quot;] = [string](PadCounter -Counter $sortIndex)&#xD;&#xA;&#xD;&#xA;    $ScriptContext.ReturnCollection.Add($dataObject)&#xD;&#xA;    # Increment counter&#xD;&#xA;    $sortIndex++&#xD;&#xA;}&#xD;&#xA;#endregion Main&#xD;&#xA;" />
+          </Binding>
+          <Binding PropertyId="AutoRefreshTickInterval">
+            <SimpleValue Type="xsd://int" Value="600" />
+          </Binding>
+        </Bindings>
+      </ComponentOverride>    
+    </ComponentOverrides>
+    <ComponentImplementations>
+      <ComponentImplementation ID="QND.Hyperv.2016.VirtualDrive.GridLayout.Implementation" Accessibility="Public" TypeId="QND.Hyperv.2016.VirtualDrive.GridLayout" Platform="Wpf, Silverlight">
+        <Composite>
+          <Base />
+        </Composite>
+      </ComponentImplementation>
+      <ComponentImplementation ID="QND.Hyperv.2016.VM.TopSnapshotAge.Implementation" Accessibility="Public" TypeId="QND.Hyperv.2016.VM.TopSnapshotAge" Platform="Wpf, Silverlight">
+        <Composite>
+          <Base />
+        </Composite>
+      </ComponentImplementation>
+      <ComponentImplementation ID="QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs.Implementation" Accessibility="Public" TypeId="QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs" Platform="Wpf, Silverlight">
+        <Composite>
+          <Base />
+        </Composite>
+      </ComponentImplementation>
+    </ComponentImplementations>
+  </Presentation>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>       
+        <DisplayString ElementID="QND.Hyperv.2016.VirtualDrive.GridLayout">
+          <Name>Virtual Machines VHD</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VirtualDrive.GridLayout.Override">
+          <Name>Virtual Machines TopN</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.Dashboard.Folder">
+          <Name>Microsoft Windows Hyper-V Dashboards</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VM.TopSnapshotAge">
+          <Name>Top VM Snapshot Age</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VM.TopSnapshotAge.Override">
+          <Name>Top VM Snapshot Age</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs">
+          <Name>Top % Fragmented VHDs</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VirtualDrive.TopFragmentedVHDs.Override">
+          <Name>Top % Fragmented VHDs</Name>
+        </DisplayString>            
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>

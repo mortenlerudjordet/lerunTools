@@ -1,0 +1,253 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Presentation>
+    <Views>
+      <View ID="QND.Hyperv.2016.VirtualMachine.State.View" Accessibility="Public" Enabled="true" Target="QND.Hyperv.2016.VM" TypeID="SC!Microsoft.SystemCenter.StateViewType" Visible="true">
+        <Category>Operations</Category>
+        <Criteria>
+          <InMaintenanceMode>false</InMaintenanceMode>
+        </Criteria>
+        <Presentation>
+          <ColumnInfo Index="0" SortIndex="0" Width="100" Grouped="false" Sorted="true" IsSortable="true" Visible="true" SortOrder="Descending">
+            <Name>State</Name>
+            <Id>QND.Hyperv.2016.VM</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="1" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>In Maintenance Mode</Name>
+            <Id>InMaintenanceMode</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="2" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Name</Name>
+            <Id>Name</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="3" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>Path</Name>
+            <Id>Path</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="4" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>Display Name</Name>
+            <Id>System.Entity/DisplayName</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="5" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>Model</Name>
+            <Id>System.ComputerHardware/Model</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="6" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>Manufacturer</Name>
+            <Id>System.ComputerHardware/Manufacturer</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="7" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Number Of Processors</Name>
+            <Id>System.ComputerHardware/NumberOfProcessors</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="8" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>VM Id</Name>
+            <Id>QND.Hyperv.2016.VM/VirtualMachineId</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="9" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>VM Name</Name>
+            <Id>QND.Hyperv.2016.VM/VirtualMachineName</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="10" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Hyper-V Host Name</Name>
+            <Id>QND.Hyperv.2016.VM/HostName</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="11" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>VMComputerName</Name>
+            <Id>QND.Hyperv.2016.VM/VMComputerName</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="12" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Integration Services Version</Name>
+            <Id>QND.Hyperv.2016.VM/ISVersion</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="13" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="false" Visible="false" SortOrder="Ascending">
+            <Name>Resource Metering Enabled</Name>
+            <Id>QND.Hyperv.2016.VM/RMEnabled</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="14" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>VM Generation</Name>
+            <Id>QND.Hyperv.2016.VM/VMGeneration</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="15" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="false" Visible="true" SortOrder="Ascending">
+            <Name>Highly Available</Name>
+            <Id>QND.Hyperv.2016.VM/HA</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="16" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="false" Visible="false" SortOrder="Ascending">
+            <Name>Min Memory (MB)</Name>
+            <Id>QND.Hyperv.2016.VM/MinMemory</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="17" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="false" Visible="false" SortOrder="Ascending">
+            <Name>Max Memoery (MB)</Name>
+            <Id>QND.Hyperv.2016.VM/MaxMemory</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="18" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="false" Visible="false" SortOrder="Ascending">
+            <Name>Startup Memory (MB)</Name>
+            <Id>QND.Hyperv.2016.VM/StartMemory</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="19" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>Processor count</Name>
+            <Id>QND.Hyperv.2016.VM/ProcessorCount</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="20" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>OS Platform Id</Name>
+            <Id>QND.Hyperv.2016.VM/OSPlatformId</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="21" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>OS Family</Name>
+            <Id>QND.Hyperv.2016.VM/OSFamily</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="22" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>OS Name</Name>
+            <Id>QND.Hyperv.2016.VM/OSName</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="23" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>Hyper-V 2012R2 - VM Drive (QND)</Name>
+            <Id>QND.Hyperv.2016.VirtualDrive</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="24" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>Hyper-V 2012R2 - VM NIC (QND)</Name>
+            <Id>QND.Hyperv.2016.VirtualNetworkAdapter</Id>
+          </ColumnInfo>
+        </Presentation>
+        <Target />
+      </View>
+      <View ID="QND.Hyperv.2016.VirtualDrive.State.View" Accessibility="Public" Enabled="true" Target="QND.Hyperv.2016.VirtualDrive" TypeID="SC!Microsoft.SystemCenter.StateViewType" Visible="true">
+        <Category>Operations</Category>
+        <Criteria>
+          <InMaintenanceMode>false</InMaintenanceMode>
+        </Criteria>
+        <Presentation>
+          <ColumnInfo Index="0" SortIndex="0" Width="100" Grouped="false" Sorted="true" IsSortable="true" Visible="true" SortOrder="Descending">
+            <Name>State</Name>
+            <Id>QND.Hyperv.2016.VirtualDrive</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="1" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>In Maintenance Mode</Name>
+            <Id>InMaintenanceMode</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="2" SortIndex="0" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Name</Name>
+            <Id>Name</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="3" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Path</Name>
+            <Id>Path</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="4" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>Display Name</Name>
+            <Id>System.Entity/DisplayName</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="5" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Device Id</Name>
+            <Id>QND.HyperV.VMHardwareComponent/DeviceIs</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="6" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Image File</Name>
+            <Id>QND.Hyperv.2016.VirtualDrive/ImageFile</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="7" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>VHD Type</Name>
+            <Id>QND.Hyperv.2016.VirtualDrive/VHDType</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="8" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>VHD Format</Name>
+            <Id>QND.Hyperv.2016.VirtualDrive/VHDFormat</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="9" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>Connected Controller Name</Name>
+            <Id>QND.Hyperv.2016.VirtualDrive/ConnectedControllerName</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="10" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Max Size (GB)</Name>
+            <Id>QND.Hyperv.2016.VirtualDrive/MaxSizeGB</Id>
+          </ColumnInfo>
+        </Presentation>
+        <Target />
+      </View>
+      <View ID="QND.Hyperv.2016.VirtualNetworkAdapter.State.View" Accessibility="Public" Enabled="true" Target="QND.Hyperv.2016.VirtualNetworkAdapter" TypeID="SC!Microsoft.SystemCenter.StateViewType" Visible="true">
+        <Category>Operations</Category>
+        <Criteria>
+          <InMaintenanceMode>false</InMaintenanceMode>
+        </Criteria>
+        <Presentation>
+          <ColumnInfo Index="0" SortIndex="0" Width="100" Grouped="false" Sorted="true" IsSortable="true" Visible="true" SortOrder="Descending">
+            <Name>State</Name>
+            <Id>QND.Hyperv.2016.VirtualNetworkAdapter</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="1" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>In Maintenance Mode</Name>
+            <Id>InMaintenanceMode</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="2" SortIndex="0" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Name</Name>
+            <Id>Name</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="3" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Path</Name>
+            <Id>Path</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="4" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="false" SortOrder="Ascending">
+            <Name>Display Name</Name>
+            <Id>System.Entity/DisplayName</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="5" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Device Id</Name>
+            <Id>QND.HyperV.VMHardwareComponent/DeviceIs</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="6" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>Image File</Name>
+            <Id>QND.Hyperv.2016.VirtualNetworkAdapter/SwitchId</Id>
+          </ColumnInfo>
+          <ColumnInfo Index="7" SortIndex="-1" Width="100" Grouped="false" Sorted="false" IsSortable="true" Visible="true" SortOrder="Ascending">
+            <Name>VHD Type</Name>
+            <Id>QND.Hyperv.2016.VirtualNetworkAdapter/SwitchName</Id>
+          </ColumnInfo>
+        </Presentation>
+        <Target />
+      </View>
+      <View ID="QND.Hyperv.2016.VirtualMachine.Performance.View" Accessibility="Public" Target="QND.Hyperv.2016.VM" TypeID="SC!Microsoft.SystemCenter.PerformanceViewType">
+        <Category>PerformanceCollection</Category>
+        <Criteria />
+      </View>
+      <View ID="QND.Hyperv.2016.VirtualDrive.Performance.View" Accessibility="Public" Target="QND.Hyperv.2016.VirtualDrive" TypeID="SC!Microsoft.SystemCenter.PerformanceViewType">
+        <Category>PerformanceCollection</Category>
+        <Criteria />
+      </View>
+      <View ID="QND.Hyperv.2016.VirtualNetworkAdapter.Performance.View" Accessibility="Public" Target="QND.Hyperv.2016.VirtualNetworkAdapter" TypeID="SC!Microsoft.SystemCenter.PerformanceViewType">
+        <Category>PerformanceCollection</Category>
+        <Criteria />
+      </View>
+    </Views>
+    <FolderItems>
+      <FolderItem ElementID="QND.Hyperv.2016.VirtualMachine.State.View" ID="QND.Hyperv.2016.VMState.Item" Folder="HVLib!Microsoft.Windows.HyperV.RootFolder" />
+      <FolderItem ElementID="QND.Hyperv.2016.VirtualDrive.State.View" ID="QND.Hyperv.2016.VirtualDriveState.Item" Folder="HVLib!Microsoft.Windows.HyperV.RootFolder" />
+      <FolderItem ElementID="QND.Hyperv.2016.VirtualNetworkAdapter.State.View" ID="QND.Hyperv.2016.VirtualNetworkAdapterState.Item" Folder="HVLib!Microsoft.Windows.HyperV.RootFolder" />
+      <FolderItem ElementID="QND.Hyperv.2016.VirtualMachine.Performance.View" ID="QND.Hyperv.2016.VMPerf.Item" Folder="HVLib!Microsoft.Windows.HyperV.RootFolder" />
+      <FolderItem ElementID="QND.Hyperv.2016.VirtualDrive.Performance.View" ID="QND.Hyperv.2016.VirtualDrivePerf.Item" Folder="HVLib!Microsoft.Windows.HyperV.RootFolder" />
+      <FolderItem ElementID="QND.Hyperv.2016.VirtualNetworkAdapter.Performance.View" ID="QND.Hyperv.2016.VirtualNetworkAdapterPerf.Item" Folder="HVLib!Microsoft.Windows.HyperV.RootFolder" />
+    </FolderItems> 
+  </Presentation>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="QND.Hyperv.2016.VirtualMachine.State.View">
+          <Name>Hyper-V 2016 Virtual Machines (QND)</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VirtualDrive.State.View">
+          <Name>Hyper-V 2016 Virtual Drives (QND)</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VirtualNetworkAdapter.State.View">
+          <Name>Hyper-V 2016 Virtual NIC (QND)</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VirtualMachine.Performance.View">
+          <Name>Hyper-V 2016 Virtual Machines Performance (QND)</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VirtualDrive.Performance.View">
+          <Name>Hyper-V 2016 Virtual Drives Performance (QND)</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VirtualNetworkAdapter.Performance.View">
+          <Name>Hyper-V 2016 Virtual NIC Performance (QND)</Name>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>

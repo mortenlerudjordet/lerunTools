@@ -1,0 +1,481 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <TypeDefinitions>
+    <SchemaTypes>
+      <SchemaType ID="QND.Hyperv.StateWidget.Template.Schema" Accessibility="Internal">
+        <xs:complexType name="Configuration" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sc="http://schemas.microsoft.com/SystemCenter/Common/TypeExtensions">
+          <xs:complexContent>
+            <xs:extension base="Personalization">
+              <xs:sequence minOccurs="1" maxOccurs="1">
+                <xs:element name="Script" type="xs:anyType" sc:type="xsd://string" minOccurs="1" maxOccurs="1" />
+                <xs:element name="AutoRefreshTickInterval" type="xs:anyType" sc:type="xsd://int" minOccurs="0" maxOccurs="1" />
+              </xs:sequence>
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+        <xs:complexType name="Personalization" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sc="http://schemas.microsoft.com/SystemCenter/Common/TypeExtensions">
+          <xs:sequence minOccurs="1" maxOccurs="1">
+            <xs:element name="Script" type="xs:anyType" sc:type="xsd://string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="AutoRefreshTickInterval" type="xs:anyType" sc:type="xsd://int" minOccurs="0" maxOccurs="1" />
+          </xs:sequence>
+        </xs:complexType>
+      </SchemaType>
+    </SchemaTypes>
+  </TypeDefinitions>
+  <Presentation>
+    <Folders>
+      <Folder ID="QND.Hyperv.ColumnCapableStateWidgetTemplate.Folder" Accessibility="Internal" ParentFolder="Configuration!Microsoft.SystemCenter.Visualization.WidgetViewTemplateRoot" />
+    </Folders>
+    <ComponentTypes>
+      <ComponentType ID="QND.Hyperv.StateWidget.Template" Accessibility="Public" Lifetime="ManagementPackElement">
+        <Property Name="AutoRefreshTickInterval" Type="xsd://int" BindingDirection="In">
+          <SimpleValue Type="xsd://integer" Value="300" />
+        </Property>
+        <Property Name="Script" Type="xsd://string" BindingDirection="Both" />
+        <Property Name="SelectedRow" Type="BaseDataType[]" BindingDirection="Out" />
+        <Property Name="IsBusy" Type="BaseDataType" BindingDirection="Out" />
+        <Property Name="LastError" Type="BaseDataType" BindingDirection="Out" />
+        <Property Name="ShowSearchBar" Type="xsd://boolean" BindingDirection="In">
+          <SimpleValue Type="xsd://boolean" Value="True" />
+        </Property>
+      </ComponentType>
+      <ComponentType ID="QND.Hyperv.StateWidget.Template.Common.DataGridColumnsToPropertyNames" Accessibility="Public" Lifetime="ManagementPackElement">
+        <Property Name="Columns" Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ColumnType/DataGridColumn[]" BindingDirection="In" />
+        <Property Name="GroupedColumns" Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ColumnType/DataCollectionViewColumn[]" BindingDirection="In" />
+        <Property Name="SortedColumns" Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ColumnType/DataCollectionViewColumn[]" BindingDirection="In" />
+        <Property Name="PropertyNames" Type="xsd://string[]" BindingDirection="Both" />
+      </ComponentType>
+      <ComponentType ID="QND.Hyperv.StateWidget.Template.CustomExpressionPageScript" Accessibility="Public" Lifetime="ManagementPackElement">
+        <Property Name="Script" Type="xsd://string" BindingDirection="Both" />
+      </ComponentType>
+      <ComponentType ID="QND.Hyperv.StateWidget.Template.CustomExpressionPageRefreshInterval" Accessibility="Public" Lifetime="ManagementPackElement">
+        <Property Name="AutoRefreshTickInterval" Type="xsd://string" BindingDirection="Both" />
+      </ComponentType>
+      <ComponentType ID="QND.Hyperv.StateWidget.Template.LabelledTextBox" Accessibility="Internal" Lifetime="ManagementPackElement">
+        <Property Name="Label" Type="xsd://string" BindingDirection="Both" />
+        <Property Name="MultilineTextBox" Type="xsd://boolean" BindingDirection="Both" />
+        <Property Name="Height" Type="xsd://int" BindingDirection="Both" />
+        <Property Name="MaxLength" Type="xsd://int" BindingDirection="In" />
+        <Property Name="Text" Type="xsd://string" BindingDirection="Both" />
+      </ComponentType>
+    </ComponentTypes>
+    <ComponentReferences>
+      <ComponentReference ID="QND.Hyperv.StateWidget.Template.FolderItem" Accessibility="Public" TypeID="QND.Hyperv.StateWidget.Template" Parent="QND.Hyperv.ColumnCapableStateWidgetTemplate.Folder" />
+    </ComponentReferences>
+    <ComponentImplementations>
+      <ComponentImplementation ID="QND.Hyperv.StateWidget.Template.ComponentImplementation" Accessibility="Internal" TypeId="QND.Hyperv.StateWidget.Template" Platform="All">
+        <Composite>
+          <Variable Id="FilterCriteria" Type="BaseDataType" />
+          <Variable Id="FilterPropertyNames" Type="xsd://string[]" />
+          <Variable Id="LocalSelectedItems" Type="BaseDataType[]" />
+          <Variable Id="GlobalSelectedItems" Type="BaseDataType[]" />
+          <Variable Id="SortedColumns" Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ColumnType/DataGridColumn[]">
+            <ComplexValueCollection Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ColumnType/DataGridColumn[]">
+              <ComplexValue Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ColumnType/DataGridColumn">
+                <Binding PropertyId="PropertyName">
+                  <SimpleValue Type="xsd://string" Value="State" />
+                </Binding>
+                <Binding PropertyId="HeaderDisplayObject">
+                  <SimpleValue Type="xsd://string" Value="State" />
+                </Binding>
+                <Binding PropertyId="XPath">
+                  <SimpleValue Type="xsd://string" Value="$Object/PropertyCollection[Name='State']$" />
+                </Binding>
+                <Binding PropertyId="SourceType">
+                  <SimpleValue Type="xsd://string" Value="ManagedEntity" />
+                </Binding>
+              </ComplexValue>
+              <ComplexValue Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ColumnType/DataGridColumn">
+                <Binding PropertyId="PropertyName">
+                  <SimpleValue Type="xsd://string" Value="Name" />
+                </Binding>
+                <Binding PropertyId="HeaderDisplayObject">
+                  <SimpleValue Type="xsd://string" Value="Name" />
+                </Binding>
+                <Binding PropertyId="XPath">
+                  <SimpleValue Type="xsd://string" Value="$Object/PropertyCollection[Name='Name']$" />
+                </Binding>
+                <Binding PropertyId="SourceType">
+                  <SimpleValue Type="xsd://string" Value="ManagedEntity" />
+                </Binding>
+              </ComplexValue>
+            </ComplexValueCollection>
+          </Variable>
+          <Variable Id="AutoRefreshAction" Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ActionTypes/AutoRefreshAction" />
+          <Variable Id="ConsolidatedRefreshAction" Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ActionTypes/RefreshAction" />
+          <Variable Id="DataSourceOutput" Type="BaseDataType[]" />
+          <Variable Id="GeneratedColumns" Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ColumnType/DataGridColumn[]" />
+          <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.ComponentContainer">
+            <Binding PropertyId="Visual">
+              <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGrid">
+                <Binding PropertyId="RowCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridRow">
+                    <Binding PropertyId="Height">
+                      <SimpleValue Type="xsd://string" Value="Auto" />
+                    </Binding>
+                  </Component>
+                </Binding>
+                <Binding PropertyId="RowCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridRow">
+                    <Binding PropertyId="Height">
+                      <SimpleValue Type="xsd://string" Value="*" />
+                    </Binding>
+                  </Component>
+                </Binding>
+                <Binding PropertyId="ColumnCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridColumn">
+                    <Binding PropertyId="Width">
+                      <SimpleValue Type="xsd://string" Value="*" />
+                    </Binding>
+                  </Component>
+                </Binding>
+                <Binding PropertyId="CellCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridCell">
+                    <Binding PropertyId="RowId">
+                      <SimpleValue Type="xsd://string" Value="0" />
+                    </Binding>
+                    <Binding PropertyId="ColumnId">
+                      <SimpleValue Type="xsd://string" Value="0" />
+                    </Binding>
+                    <Binding PropertyId="Content">
+                      <Component TypeId="VMMDash!Microsoft.SystemCenter.VMMHostVM.Visualization.Components.Common.WidgetFilterControl">
+                        <Binding PropertyId="Criteria">
+                          <Reference>$Variable/FilterCriteria$</Reference>
+                        </Binding>
+                        <Binding PropertyId="ControlIsVisible">
+                          <SimpleValue Type="xsd://boolean" Value="True" />
+                        </Binding>
+                      </Component>
+                    </Binding>
+                  </Component>
+                </Binding>
+                <Binding PropertyId="CellCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridCell">
+                    <Binding PropertyId="RowId">
+                      <SimpleValue Type="xsd://string" Value="1" />
+                    </Binding>
+                    <Binding PropertyId="ColumnId">
+                      <SimpleValue Type="xsd://string" Value="0" />
+                    </Binding>
+                    <Binding PropertyId="Content">
+                      <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.DataGrid">
+                        <Binding PropertyId="Data">
+                          <Reference>$Variable/DataSourceOutput$</Reference>
+                        </Binding>
+                        <Binding PropertyId="SelectionMode">
+                          <SimpleValue Type="xsd://string" Value="SingleRowSelect" />
+                        </Binding>
+                        <Binding PropertyId="SelectedRows">
+                          <Reference>$Variable/LocalSelectedItems$</Reference>
+                        </Binding>
+                        <Binding PropertyId="ColumnHeaderVisible">
+                          <SimpleValue Type="xsd://boolean" Value="True" />
+                        </Binding>
+                        <Binding PropertyId="CanReorderColumns">
+                          <SimpleValue Type="xsd://boolean" Value="True" />
+                        </Binding>
+                        <Binding PropertyId="CellComponentType">
+                          <SimpleValue Type="xsd://string" Value="Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.DataGridGenericCell" />
+                        </Binding>
+                        <Binding PropertyId="ColumnHeaderComponentType">
+                          <SimpleValue Type="xsd://string" Value="Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.DataGridColumnHeaderCell" />
+                        </Binding>
+                        <Binding PropertyId="Columns">
+                          <Reference>$Variable/GeneratedColumns$</Reference>
+                        </Binding>
+                        <Binding PropertyId="SortedColumns">
+                          <Reference>$Variable/SortedColumns$</Reference>
+                        </Binding>
+                        <Binding PropertyId="Filter">
+                          <Component TypeId="VMMDash!Microsoft.SystemCenter.VMMHostVM.Visualization.Components.Common.SmartFilter">
+                            <Binding PropertyId="Criteria">
+                              <Reference>$Variable/FilterCriteria$</Reference>
+                            </Binding>
+                            <Binding PropertyId="PropertyNames">
+                              <Reference>$Variable/FilterPropertyNames$</Reference>
+                            </Binding>
+                          </Component>
+                        </Binding>
+                      </Component>
+                    </Binding>
+                  </Component>
+                </Binding>
+              </Component>
+            </Binding>
+            <Binding PropertyId="Objects">
+              <Component TypeId="MSVCL!Microsoft.SystemCenter.Visualization.Component.Library.SelectedItemFilter">
+                <Binding PropertyId="LocalSelectedItems">
+                  <Reference>$Variable/LocalSelectedItems$</Reference>
+                </Binding>
+                <Binding PropertyId="GlobalSelectedItems">
+                  <Reference>$Variable/GlobalSelectedItems$</Reference>
+                </Binding>
+              </Component>
+            </Binding>
+            <Binding PropertyId="Objects">
+              <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.OneWaySync">
+                <Binding PropertyId="From">
+                  <Reference>$Variable/LocalSelectedItems$</Reference>
+                </Binding>
+                <Binding PropertyId="To">
+                  <Reference>$Property/SelectedRow$</Reference>
+                </Binding>
+              </Component>
+            </Binding>
+            <Binding PropertyId="Objects">
+              <Component TypeId="VMMDash!Microsoft.SystemCenter.VMMHostVM.Visualization.Components.Common.DataObjectColumnGenerator">
+                <Binding PropertyId="InputCollection">
+                  <Reference>$Variable/DataSourceOutput$</Reference>
+                </Binding>
+                <Binding PropertyId="ColumnCollection">
+                  <Reference>$Variable/GeneratedColumns$</Reference>
+                </Binding>
+              </Component>
+            </Binding>
+            <Binding PropertyId="Objects">
+              <Component TypeId="QND.Hyperv.StateWidget.Template.Common.DataGridColumnsToPropertyNames">
+                <Binding PropertyId="Columns">
+                  <Reference>$Variable/GeneratedColumns$</Reference>
+                </Binding>
+                <Binding PropertyId="SortedColumns">
+                  <Reference>$Variable/SortedColumns$</Reference>
+                </Binding>
+                <Binding PropertyId="PropertyNames">
+                  <Reference>$Variable/FilterPropertyNames$</Reference>
+                </Binding>
+              </Component>
+            </Binding>
+            <Binding PropertyId="Objects">
+              <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.AutoRefreshTimer">
+                <Binding PropertyId="TickInterval">
+                  <Reference>$Property/AutoRefreshTickInterval$</Reference>
+                </Binding>
+                <Binding PropertyId="AutoRefreshAction">
+                  <Reference>$Variable/AutoRefreshAction$</Reference>
+                </Binding>
+              </Component>
+            </Binding>
+            <Binding PropertyId="Objects">
+              <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.Consolidator">
+                <Binding PropertyId="From1">
+                  <Reference>$Variable/AutoRefreshAction$</Reference>
+                </Binding>
+                <Binding PropertyId="From2">
+                  <Reference>$Service/RefreshAction$</Reference>
+                </Binding>
+                <Binding PropertyId="To">
+                  <Reference>$Variable/ConsolidatedRefreshAction$</Reference>
+                </Binding>
+              </Component>
+            </Binding>
+            <Binding PropertyId="Objects">
+              <Component TypeId="MSVCL!Microsoft.SystemCenter.Visualization.Component.Library.PowershellDataSource">
+                <Binding PropertyId="DataTypes">
+                  <ComplexValueCollection Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.DataSourceTypes/DataTypeSpecifier[]" />
+                </Binding>
+                <Binding PropertyId="Script">
+                  <Reference>$Property/Script$</Reference>
+                </Binding>
+                <Binding PropertyId="Modules">
+                  <SimpleValue Type="xsd://string" Value="OperationsManager" />
+                </Binding>
+                <Binding PropertyId="KeyProperty">
+                  <SimpleValue Type="xsd://string" Value="Id" />
+                </Binding>
+                <Binding PropertyId="Output">
+                  <Reference>$Variable/DataSourceOutput$</Reference>
+                </Binding>
+                <Binding PropertyId="Refresh">
+                  <Reference>$Variable/ConsolidatedRefreshAction$</Reference>
+                </Binding>
+              </Component>
+            </Binding>
+          </Component>
+        </Composite>
+      </ComponentImplementation>
+      <ComponentImplementation ID="QND.Hyperv.StateWidget.Template.Common.DataGridColumnsToPropertyNames.Implementation" Accessibility="Internal" TypeId="QND.Hyperv.StateWidget.Template.Common.DataGridColumnsToPropertyNames" Platform="Wpf, Silverlight">
+        <Unit>
+          <ContractFactory>Microsoft.EnterpriseManagement.Presentation.Controls.CommonComponents.DataGridColumnsToPropertyNames</ContractFactory>
+        </Unit>
+      </ComponentImplementation>
+      <ComponentImplementation ID="QND.Hyperv.StateWidget.Template.CustomConfigurationImplementation" Accessibility="Internal" TypeId="Configuration!Microsoft.SystemCenter.Visualization.CustomConfigurationPages" Target="component://QND.Hyperv2016!QND.Hyperv.StateWidget.Template" Platform="Wpf, Silverlight">
+        <Composite>
+          <ServiceOverride ServiceId="IsBusy" Type="BaseDataType" OriginalKnownAsVariable="globalIsBusy" />
+          <ServiceOverride ServiceId="LastError" Type="BaseDataType" OriginalKnownAsVariable="globalLastError" />
+          <Variable Id="IsValid" Type="xsd://boolean">
+            <SimpleValue Type="xsd://boolean" Value="false" />
+          </Variable>
+          <Variable Id="AllColumns" Type="xsd://Microsoft.SystemCenter.Visualization.Library!Microsoft.SystemCenter.Visualization.ColumnType/DataGridColumn[]" />
+          <Component TypeId="Configuration!Microsoft.SystemCenter.Visualization.CustomPages">
+            <Binding PropertyId="Pages">
+              <Component TypeId="QND.Hyperv.StateWidget.Template.CustomExpressionPageScript">
+                <Binding PropertyId="Script">
+                  <Reference>$Property/Data/Script$</Reference>
+                </Binding>
+              </Component>
+            </Binding>
+            <Binding PropertyId="Pages">
+              <Component TypeId="QND.Hyperv.StateWidget.Template.CustomExpressionPageRefreshInterval">
+                <Binding PropertyId="AutoRefreshTickInterval">
+                  <Reference>$Property/Data/AutoRefreshTickInterval$</Reference>
+                </Binding>
+              </Component>
+            </Binding>
+            <Binding PropertyId="Data">
+              <Reference>$Property/Data$</Reference>
+            </Binding>
+            <Binding PropertyId="XsdTypeNameParameter">
+              <Reference>$Property/XsdTypeName$</Reference>
+            </Binding>
+            <Binding PropertyId="XsdTypeName">
+              <SimpleValue Type="xsd://string" Value="xsd://QND.Hyperv2016!QND.Hyperv.StateWidget.Template.Schema/Configuration" />
+            </Binding>
+          </Component>
+        </Composite>
+      </ComponentImplementation>
+      <ComponentImplementation ID="QND.Hyperv.StateWidget.Template.CustomExpressionPageRefreshIntervalImplementation" Accessibility="Internal" TypeId="QND.Hyperv.StateWidget.Template.CustomExpressionPageRefreshInterval" Platform="Wpf, Silverlight">
+        <Composite>
+          <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.WizardRegularPage">
+            <Binding PropertyId="StepId">
+              <SimpleValue Type="xsd://string" Value="Refresh Interval" />
+            </Binding>
+            <Binding PropertyId="Title">
+              <SimpleValue Type="xsd://string" Value="Enter a Refresh Interval (in seconds)" />
+            </Binding>
+            <Binding PropertyId="FinishButtonText">
+              <SimpleValue Type="xsd://string" Value="Finish" />
+            </Binding>
+            <Binding PropertyId="Content">
+              <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGrid">
+                <Binding PropertyId="RowCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridRow">
+                    <Binding PropertyId="Height">
+                      <SimpleValue Type="xsd://string" Value="Auto" />
+                    </Binding>
+                  </Component>
+                </Binding>
+                <Binding PropertyId="ColumnCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridColumn">
+                    <Binding PropertyId="Width">
+                      <SimpleValue Type="xsd://string" Value="*" />
+                    </Binding>
+                  </Component>
+                </Binding>
+                <Binding PropertyId="CellCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridCell">
+                    <Binding PropertyId="RowId">
+                      <SimpleValue Type="xsd://string" Value="0" />
+                    </Binding>
+                    <Binding PropertyId="ColumnId">
+                      <SimpleValue Type="xsd://string" Value="0" />
+                    </Binding>
+                    <Binding PropertyId="Content">
+                      <Component TypeId="QND.Hyperv.StateWidget.Template.LabelledTextBox">
+                        <Binding PropertyId="Label">
+                          <SimpleValue Type="xsd://string" Value="Enter a numerical value for the refresh internval of the widget in seconds. Default is at 300 seconds." />
+                        </Binding>
+                        <Binding PropertyId="MultilineTextBox">
+                          <SimpleValue Type="xsd://string" Value="False" />
+                        </Binding>
+                        <Binding PropertyId="Text">
+                          <Reference>$Property/AutoRefreshTickInterval$</Reference>
+                        </Binding>
+                      </Component>
+                    </Binding>
+                  </Component>
+                </Binding>
+              </Component>
+            </Binding>
+          </Component>
+        </Composite>
+      </ComponentImplementation>
+      <ComponentImplementation ID="QND.Hyperv.StateWidget.Template.CustomExpressionPageScriptImplementation" Accessibility="Internal" TypeId="QND.Hyperv.StateWidget.Template.CustomExpressionPageScript" Platform="Wpf, Silverlight">
+        <Composite>
+          <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.WizardRegularPage">
+            <Binding PropertyId="StepId">
+              <SimpleValue Type="xsd://string" Value="PowerShell Script" />
+            </Binding>
+            <Binding PropertyId="Title">
+              <SimpleValue Type="xsd://string" Value="PowerShell Script" />
+            </Binding>
+            <Binding PropertyId="FinishButtonText">
+              <SimpleValue Type="xsd://string" Value="Finish" />
+            </Binding>
+            <Binding PropertyId="Content">
+              <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGrid">
+                <Binding PropertyId="RowCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridRow">
+                    <Binding PropertyId="Height">
+                      <SimpleValue Type="xsd://string" Value="*" />
+                    </Binding>
+                  </Component>
+                </Binding>
+                <Binding PropertyId="ColumnCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridColumn">
+                    <Binding PropertyId="Width">
+                      <SimpleValue Type="xsd://string" Value="*" />
+                    </Binding>
+                  </Component>
+                </Binding>
+                <Binding PropertyId="CellCollection">
+                  <Component TypeId="Visualization!Microsoft.SystemCenter.Visualization.LayoutGridCell">
+                    <Binding PropertyId="RowId">
+                      <SimpleValue Type="xsd://string" Value="0" />
+                    </Binding>
+                    <Binding PropertyId="ColumnId">
+                      <SimpleValue Type="xsd://string" Value="0" />
+                    </Binding>
+                    <Binding PropertyId="Content">
+                      <Component TypeId="QND.Hyperv.StateWidget.Template.LabelledTextBox">
+                        <Binding PropertyId="Label">
+                          <SimpleValue Type="xsd://string" Value="PowerShell Script:" />
+                        </Binding>
+                        <Binding PropertyId="MultilineTextBox">
+                          <SimpleValue Type="xsd://string" Value="True" />
+                        </Binding>
+                        <Binding PropertyId="Text">
+                          <Reference>$Property/Script$</Reference>
+                        </Binding>
+                      </Component>
+                    </Binding>
+                  </Component>
+                </Binding>
+              </Component>
+            </Binding>
+          </Component>
+        </Composite>
+      </ComponentImplementation>
+      <ComponentImplementation ID="QND.Hyperv.StateWidget.Template.LabelledTextBoxImplementation" Accessibility="Internal" TypeId="QND.Hyperv.StateWidget.Template.LabelledTextBox" Platform="Wpf, Silverlight">
+        <Unit>
+          <ContractFactory>Microsoft.EnterpriseManagement.Monitoring.Components.UnitComponents.LabelledTextBox</ContractFactory>
+        </Unit>
+      </ComponentImplementation>
+    </ComponentImplementations>
+    <ComponentBehaviors>
+      <ComponentBehavior ID="QND.Hyperv.StateWidget.Template.TemplateBehavior" Accessibility="Internal" BehaviorTypeId="Visualization!Microsoft.SystemCenter.Visualization.PersonalizeBehavior" ComponentTypeId="QND.Hyperv.StateWidget.Template">
+        <Bindings>
+          <Binding PropertyId="ConfigurationDataType">
+            <SimpleValue Type="xsd://string" Value="xsd://QND.Hyperv2016!QND.Hyperv.StateWidget.Template.Schema/Configuration" />
+          </Binding>
+          <Binding PropertyId="PersonalizationDataType">
+            <SimpleValue Type="xsd://string" Value="xsd://QND.Hyperv2016!QND.Hyperv.StateWidget.Template.Schema/Personalization" />
+          </Binding>
+          <Binding PropertyId="EnableImplicitPersonalization">
+            <SimpleValue Type="xsd://boolean" Value="True" />
+          </Binding>
+        </Bindings>
+      </ComponentBehavior>
+    </ComponentBehaviors>
+  </Presentation>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="QND.Hyperv.StateWidget.Template">
+          <Name>Blue Bar Performance Widget</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.ColumnCapableStateWidgetTemplate.Folder">
+          <Name>Widget</Name>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>

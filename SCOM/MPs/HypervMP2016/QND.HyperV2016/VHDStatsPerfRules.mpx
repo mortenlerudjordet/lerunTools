@@ -1,0 +1,60 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Monitoring>
+    <Rules>
+      <Rule ID="QND.Hyperv2016.SnapshotAgeCollect.Rule" Target="QND.Hyperv.2016.VM" Enabled="false" ConfirmDelivery="false" Remotable="true" Priority="Normal" DiscardLevel="100">
+        <Category>PerformanceCollection</Category>
+        <DataSources>
+          <DataSource ID="DSScript" TypeID="QND.Hyperv2016.GetVMSnapshotAge.Perf.DS">
+            <IntervalSeconds>28800</IntervalSeconds>
+            <SyncTime></SyncTime>
+            <VMId>$Target/Property[Type="QND.Hyperv.2016.VM"]/VirtualMachineId$</VMId>
+            <ObjectName>Virtual Machine</ObjectName>
+            <CounterName>SnapshotAgeHours</CounterName>
+            <InstanceProperty>$Target/Property[Type='QND.Hyperv.2016.VM']/VirtualMachineName$</InstanceProperty>
+            <PropertyBagValue>OldestSnapshotAgeHours</PropertyBagValue>
+            <TimeoutSeconds>300</TimeoutSeconds>
+            <TraceLevel>2</TraceLevel>
+          </DataSource>
+        </DataSources>
+        <WriteActions>
+          <WriteAction ID="CollectToDB" TypeID="SC!Microsoft.SystemCenter.CollectPerformanceData" />
+          <WriteAction ID="CollectToDW" TypeID="MSDL!Microsoft.SystemCenter.DataWarehouse.PublishPerformanceData" />
+        </WriteActions>
+      </Rule>
+      <Rule ID="QND.Hyperv2016.FragmentationCollection.Rule" Target="QND.Hyperv.2016.VirtualDrive" Enabled="false" ConfirmDelivery="false" Remotable="true" Priority="Normal" DiscardLevel="100">
+        <Category>PerformanceCollection</Category>
+        <DataSources>
+          <DataSource ID="ScriptDS" TypeID="QND.Hyperv2016.GetVHDFragment.Perf.DS">
+            <IntervalSeconds>7200</IntervalSeconds>
+            <SyncTime></SyncTime>
+            <VirtualDiskId>$Target/Property[Type='QND.HyperV.VMHardwareComponent']/DeviceId$</VirtualDiskId>
+            <ObjectName>Hyper-V Virtual Storage Device</ObjectName>
+            <CounterName>Fragmentation</CounterName>
+            <InstanceProperty>$Target/Property[Type='QND.HyperV.VMHardwareComponent']/PerfInstance$</InstanceProperty>
+            <PropertyBagValue>FragPerc</PropertyBagValue>
+            <TimeoutSeconds>300</TimeoutSeconds>
+            <TraceLevel>2</TraceLevel>
+          </DataSource>
+        </DataSources>
+        <WriteActions>
+          <WriteAction ID="CollectToDB" TypeID="SC!Microsoft.SystemCenter.CollectPerformanceData" />
+          <WriteAction ID="CollectToDW" TypeID="MSDL!Microsoft.SystemCenter.DataWarehouse.PublishPerformanceData" />
+        </WriteActions>
+      </Rule>
+    </Rules>
+  </Monitoring>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="QND.Hyperv2016.SnapshotAgeCollect.Rule">
+          <Name>Hyper-V - VM Snapshot Age</Name>
+          <Description>Collects oldest snapshot age for VMs</Description>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv2016.FragmentationCollection.Rule">
+          <Name>Hyper-V - VHD Fragmentation</Name>
+          <Description>Collects how much fragmentet VHD are in %</Description>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>

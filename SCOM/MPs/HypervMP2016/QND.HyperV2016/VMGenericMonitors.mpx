@@ -1,0 +1,95 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Monitoring>
+    <Monitors>
+      <UnitMonitor ID="QND.Hyperv.2016.VMMemoryStatus" Accessibility="Public" Enabled="false" Target="QND.Hyperv.2016.VM"
+            ParentMonitorID="Health!System.Health.PerformanceState" Remotable="true" Priority="Normal" TypeID="QND.Hyperv.2016.VMMemoryStatus.MT" ConfirmDelivery="false">
+        <Category>PerformanceHealth</Category>
+        <AlertSettings AlertMessage="QND.Hyperv.2016.VMMemoryStatus.AlertMessage">
+          <AlertOnState>Warning</AlertOnState>
+          <AutoResolve>true</AutoResolve>
+          <AlertPriority>Normal</AlertPriority>
+          <AlertSeverity>MatchMonitorHealth</AlertSeverity>
+          <AlertParameters>
+            <AlertParameter1>$Target/Property[Type="QND.Hyperv.2016.VM"]/VirtualMachineName$</AlertParameter1>
+            <AlertParameter2>$Data/Context/Property[@Name="MemStatus"]$</AlertParameter2>
+            <AlertParameter3>$Data/Context/Property[@Name="Pressure"]$</AlertParameter3>
+          </AlertParameters>
+        </AlertSettings>
+        <OperationalStates>
+          <OperationalState ID="Healthy" MonitorTypeStateID="OK" HealthState="Success" />
+          <OperationalState ID="UnderPressure" MonitorTypeStateID="UnderPressure" HealthState="Warning" />
+        </OperationalStates>
+        <Configuration>
+          <IntervalSeconds>3611</IntervalSeconds>
+          <SyncTime></SyncTime>
+          <TimeoutSeconds>120</TimeoutSeconds>
+          <TraceLevel>2</TraceLevel>
+          <VMId>$Target/Property[Type='QND.Hyperv.2016.VM']/VirtualMachineId$</VMId>
+          <PressureThreshold>110</PressureThreshold>
+        </Configuration>
+      </UnitMonitor>
+      <UnitMonitor ID="QND.Hyperv2016.VMName.Matches.ComputerName.Monitor" Accessibility="Public" Enabled="false" ConfirmDelivery="false"
+                   ParentMonitorID="Health!System.Health.ConfigurationState" Priority="Normal" Remotable="true"
+                   Target="QND.Hyperv.2016.VM" TypeID ="QND.Hyperv2016.VMName.ComputerName.Match.MT">
+        <Category>ConfigurationHealth</Category>
+        <AlertSettings AlertMessage="QND.Hyperv2016.VMName.Matches.ComputerName.Monitor.AlertMessage">
+          <AlertOnState>Warning</AlertOnState>
+          <AutoResolve>true</AutoResolve>
+          <AlertPriority>Normal</AlertPriority>
+          <AlertSeverity>Warning</AlertSeverity>
+          <AlertParameters>
+            <AlertParameter1>$Target/Property[Type="QND.Hyperv.2016.VM"]/VMComputerName$</AlertParameter1>
+            <AlertParameter2>$Target/Property[Type="QND.Hyperv.2016.VM"]/VirtualMachineName$</AlertParameter2>
+            <AlertParameter3>$Data/Context/Property[@Name='NetBIOSName']$</AlertParameter3>
+          </AlertParameters>
+        </AlertSettings>
+        <OperationalStates>
+          <OperationalState ID="NamesMatch" MonitorTypeStateID="NamesMatch" HealthState="Success" />
+          <OperationalState ID="NamesDoNotMatch" MonitorTypeStateID="NamesDoNotMatch" HealthState="Warning" />
+        </OperationalStates>
+        <Configuration>
+          <IntervalSeconds>86400</IntervalSeconds>
+          <SyncTime />
+          <ComputerFQDN>$Target/Property[Type="QND.Hyperv.2016.VM"]/VMComputerName$</ComputerFQDN>
+          <VMName>$Target/Property[Type="QND.Hyperv.2016.VM"]/VirtualMachineName$</VMName>
+          <TimeoutSeconds>300</TimeoutSeconds>
+        </Configuration>
+      </UnitMonitor>
+    </Monitors>
+  </Monitoring>
+  <Presentation>
+    <StringResources>
+      <StringResource ID="QND.Hyperv.2016.VMMemoryStatus.AlertMessage"/>
+      <StringResource ID="QND.Hyperv2016.VMName.Matches.ComputerName.Monitor.AlertMessage"/>      
+    </StringResources>
+  </Presentation>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="QND.Hyperv.2016.VMMemoryStatus">
+          <Name>VM Dynamic Memory Status</Name>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv.2016.VMMemoryStatus.AlertMessage">
+          <Name>Hyper-V - Dynamic Memory pressure</Name>
+          <Description>{0} is under memory pressure. Performance can be impacted.
+          Current Memory Status:{1}
+          Current Pressure Level:{2}
+        </Description>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv2016.VMName.Matches.ComputerName.Monitor">
+          <Name>Hyper-V - VM Name Matches Computer Name Monitor</Name>
+          <Description>This montior compares the Hyper-V virtual machine name with the VM's computer name. It raises alerts when the virtual machine name does not match the VM's computer name.</Description>
+        </DisplayString>
+        <DisplayString ElementID="QND.Hyperv2016.VMName.Matches.ComputerName.Monitor.AlertMessage">
+          <Name>Hyper-V - Virtual machine name does not match the VM's computer name</Name>
+          <Description>
+            The Hyper-V virtual machine name for {1} does not matche the VM's computer name.
+
+            VM Computer FQDN: {0}
+            VM Computer NetBIOS Name: {2}
+          </Description>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>
