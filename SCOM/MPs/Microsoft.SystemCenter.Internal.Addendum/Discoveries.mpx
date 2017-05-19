@@ -1,0 +1,87 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Monitoring>
+    <Discoveries>
+      <Discovery ID="Microsoft.SystemCenter.DiscoverWindowsComputerProperties.Addendum" Comment="Discover Windows Computer Properties" Enabled="true" Target="Windows!Microsoft.Windows.Computer" ConfirmDelivery="false" Remotable="true" Priority="Normal">
+        <Category>Discovery</Category>
+        <DiscoveryTypes>
+          <DiscoveryClass TypeID="Windows!Microsoft.Windows.Computer">
+            <Property PropertyID="NetbiosComputerName" />
+            <Property PropertyID="NetbiosDomainName" />
+            <Property PropertyID="IPAddress" />
+            <Property PropertyID="DomainDnsName" />
+            <Property PropertyID="OrganizationalUnit" />
+            <Property PropertyID="ForestDnsName" />
+            <Property PropertyID="ActiveDirectorySite" />
+            <Property PropertyID="LogicalProcessors" />
+          </DiscoveryClass>
+        </DiscoveryTypes>
+        <DataSource ID="PropertyDiscovery" TypeID="Microsoft.SystemCenter.WindowsComputerPropertyDiscovery.Addendum">
+          <IntervalSeconds>86400</IntervalSeconds>
+          <TimeoutSeconds>300</TimeoutSeconds>
+          <LogLevelText>Information</LogLevelText>
+        </DataSource>
+      </Discovery>
+      <Discovery ID="Microsoft.SystemCenter.DiscoverWindowsOSProperties.Addendum" Comment="Discover OS properties using WMI" Enabled="true" Target="Windows!Microsoft.Windows.Computer" ConfirmDelivery="false" Remotable="true" Priority="Normal">
+        <Category>Discovery</Category>
+        <DiscoveryTypes>
+          <DiscoveryClass TypeID="Windows!Microsoft.Windows.OperatingSystem">
+            <Property TypeID="System!System.Entity" PropertyID="DisplayName" />
+            <Property PropertyID="OSVersion" />
+            <Property PropertyID="OSVersionDisplayName" />
+            <Property PropertyID="BuildNumber" />
+            <Property PropertyID="CSDVersion" />
+            <Property PropertyID="ServicePackVersion" />
+            <Property PropertyID="SerialNumber" />
+            <Property PropertyID="InstallDate" />
+            <Property PropertyID="SystemDrive" />
+            <Property PropertyID="WindowsDirectory" />
+            <Property PropertyID="PhysicalMemory" />
+          </DiscoveryClass>
+        </DiscoveryTypes>
+        <DataSource ID="DiscoveryDataSource" TypeID="Windows!Microsoft.Windows.TimedPowerShell.DiscoveryProvider">
+          <IntervalSeconds>86400</IntervalSeconds>
+          <SyncTime />
+          <ScriptName>DiscoverWindowsOSProperties.ps1</ScriptName>
+          <ScriptBody>$IncludeFileContent/Scripts/DiscoverWindowsOSProperties.ps1$</ScriptBody>
+          <Parameters>
+            <Parameter>
+              <Name>SourceType</Name>
+              <Value>0</Value>
+            </Parameter>
+            <Parameter>
+              <Name>SourceId</Name>
+              <Value>$MPElement$</Value>
+            </Parameter>
+            <Parameter>
+              <Name>ManagedEntityId</Name>
+              <Value>$Target/Id$</Value>
+            </Parameter>
+            <Parameter>
+              <Name>ComputerIdentity</Name>
+              <Value>$Target/Property[Type="Windows!Microsoft.Windows.Computer"]/PrincipalName$</Value>
+            </Parameter>
+            <Parameter>
+              <Name>NetworkName</Name>
+              <Value>$Target/Property[Type="Windows!Microsoft.Windows.Computer"]/NetworkName$</Value>
+            </Parameter>
+          </Parameters>
+          <TimeoutSeconds>300</TimeoutSeconds>
+        </DataSource>
+      </Discovery>
+    </Discoveries>
+  </Monitoring>
+  <LanguagePacks>
+    <LanguagePack ID="ENU" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="Microsoft.SystemCenter.DiscoverWindowsComputerProperties.Addendum">
+          <Name>Discover Windows Computer Properties Addendum</Name>
+          <Description>Discovers properties on the Windows computer class</Description>
+        </DisplayString>
+        <DisplayString ElementID="Microsoft.SystemCenter.DiscoverWindowsOSProperties.Addendum">
+          <Name>Discovery Operating System Properties Addendum</Name>
+          <Description>Discovers properties on the Operating System class</Description>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPackFragment>
