@@ -218,30 +218,40 @@ Switch($LogLevelText)
 # Alternate way to write to eventlog for SCOM
 Write-EventLog -EventId $EventId -LogName 'Operations Manager' -Source 'Health Service Script' -EntryType Information -Message "$($SCRIPT_NAME): Executing with loglevel: $LogLevelText" -ErrorAction SilentlyContinue
 
-#Check the OS version
-$isHigherThanWin08 = CheckByOSCurrentVersion
-
-#Create PropertyBag object
-$SCOMapi = new-object -comObject "MOM.ScriptAPI"
-LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Time started: $((Get-Date).ToString("HH:mm:ss"))"
-
-$propertyBag = $SCOMapi.CreatePropertyBag()
-
-$error.Clear()
-
-#Set variables
-LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Retrieving WMI Status"
-$strWMIStatus = GetWMIStatus -ComputerName $ComputerName
-LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "WMI Status: $strWMIStatus"
-if($error.Count -ne 0)
+Try
 {
-    $strMessageToUse = "Script WMIFunctionalCheck executed with Errors.`nError Details: " + $error[0]
-    ReturnResponse -ErrorFlag $true -Message $strMessageToUse
+	#Check the OS version
+	$isHigherThanWin08 = CheckByOSCurrentVersion
+
+	#Create PropertyBag object
+	$SCOMapi = new-object -comObject "MOM.ScriptAPI"
+	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Time started: $((Get-Date).ToString("HH:mm:ss"))"
+
+	$propertyBag = $SCOMapi.CreatePropertyBag()
+
+	$error.Clear()
+
+	#Set variables
+	LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Retrieving WMI Status"
+	$strWMIStatus = GetWMIStatus -ComputerName $ComputerName
+	LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "WMI Status: $strWMIStatus"
+	if($error.Count -ne 0)
+	{
+		$strMessageToUse = "Script WMIFunctionalCheck executed with Errors.`nError Details: " + $error[0]
+		ReturnResponse -ErrorFlag $true -Message $strMessageToUse
+	}
+	else
+	{
+		$strMessageToUse = "Script WMIFunctionalCheck executed Successfully"
+		ReturnResponse -ErrorFlag $false -Message $strMessageToUse
+	}
 }
-else
+Catch
 {
-    $strMessageToUse = "Script WMIFunctionalCheck executed Successfully"
-    ReturnResponse -ErrorFlag $false -Message $strMessageToUse
+	LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error running script.`n$($_.Exception.Message)"
 }
-$Time.Stop()
-LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script Finished`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
+Finally
+{
+	$Time.Stop()
+	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script Finished`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
+}

@@ -1,0 +1,18 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Monitoring>
+    <Overrides>
+        <MonitorPropertyOverride ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.DisableForManagementServer" Context="SCLibrary!Microsoft.SystemCenter.ManagementServerComputersGroup" Enforced="false" Monitor="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum" Property="Enabled">
+          <Value>false</Value>
+        </MonitorPropertyOverride>
+        <MonitorPropertyOverride ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.DisableOriginalWMIMon" Context="SCLibrary!Microsoft.SystemCenter.Agent" Enforced="false" Monitor="Core!Microsoft.SystemCenter.WMIFunctionalMonitor" Property="Enabled">
+          <Value>false</Value>
+        </MonitorPropertyOverride>
+        <MonitorPropertyOverride ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.DisableOriginalCPUCollectMon" Context="SCLibrary!Microsoft.SystemCenter.HealthService" Enforced="false" Monitor="Core!Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitor" Property="Enabled">
+          <Value>false</Value>
+        </MonitorPropertyOverride>
+        <RulePropertyOverride ID="Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeMonitorAddendum.DisableOriginalCPUCollectRule" Context="SCLibrary!Microsoft.SystemCenter.HealthService" Enforced="false" Rule="Core!Microsoft.SystemCenter.HealthService.SCOMpercentageCPUTimeCollection" Property="Enabled">
+          <Value>false</Value>
+        </RulePropertyOverride>
+    </Overrides>
+  </Monitoring>  
+</ManagementPackFragment>

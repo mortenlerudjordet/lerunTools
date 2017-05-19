@@ -16,7 +16,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <GenerateSealed>True</GenerateSealed>
     <Company>lerun</Company>
-    <Copyright>Community</Copyright>
+    <Copyright>Free</Copyright>
     <DelaySigning>False</DelaySigning>
     <AssemblyOriginatorKeyFile>Q:\Personlig\Sertifikat\CodeSigning.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
@@ -80,6 +80,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MonitorTypes.mpx">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Overrides.mpx">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProbeActionModuleTypes.mpx">
