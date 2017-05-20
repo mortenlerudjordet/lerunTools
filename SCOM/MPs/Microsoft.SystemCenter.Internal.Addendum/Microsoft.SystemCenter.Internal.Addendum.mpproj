@@ -4,7 +4,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ProjectGuid>{3cc39c79-a6e8-4b60-b46b-4f3a32521c42}</ProjectGuid>
     <RootNamespace>Microsoft.SystemCenter.Internal.Addendum</RootNamespace>
-    <Name>Microsoft SystemCenter Interna .Addendum</Name>
+    <Name>Microsoft SystemCenter Interna Addendum</Name>
     <ManagementPackName>Microsoft.SystemCenter.Internal.Addendum</ManagementPackName>
     <Version>1.0.0.0</Version>
     <MpFrameworkVersion>v7.0.2</MpFrameworkVersion>
@@ -24,8 +24,8 @@
     <DebugSymbols>false</DebugSymbols>
     <OutputPath>bin\Release\</OutputPath>
     <DelaySigning>false</DelaySigning>
-    <Company>MyCompany</Company>
-    <Copyright>Copyright (c) MyCompany. All rights reserved.</Copyright>
+    <Company>Lerun</Company>
+    <Copyright>Free</Copyright>
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile />
   </PropertyGroup>

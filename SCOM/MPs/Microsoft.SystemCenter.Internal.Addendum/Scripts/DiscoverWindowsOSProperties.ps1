@@ -105,15 +105,27 @@ try
 	if($isHigherThanWin08 -eq $true)
 	{
 	  try{
-		$items = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ErrorAction stop
-	  }catch{
-		import-module cimcmdlets
-		$items = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties
+		# Check if CIM methods are loaded
+		if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) )
+		{
+			# Stop if one cannot use Get-CimInstance CMDlet
+			Import-Module -Name cimcmdlets -ErrorAction Stop
+		}
+		$items = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ComputerName $NetworkName -ErrorAction SilentlyContinue -ErrorVariable wmiError
+		if($wmiError)
+		{
+			$items = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ErrorAction Stop
+			$wmiError = $Null
+		}
+	  }
+	  catch
+	  {
+			LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing OS information.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
 	  }
 	}
 	else
 	{
-	  $items = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties
+	  $items = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ComputerName $NetworkName
 	}
 
 	if($items -ne $null)
@@ -130,7 +142,7 @@ try
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/OSVersion$", $item.Version)
 				}
-			  else
+				else
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/OSVersion$", "")
 				}
@@ -140,7 +152,7 @@ try
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/OSVersionDisplayName$", $item.Caption)
 					$windowsOS.AddProperty("$MPElement[Name='System!System.Entity']/DisplayName$", $item.Caption)
 				}
-			  else
+				else
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/OSVersionDisplayName$", "")
 					$windowsOS.AddProperty("$MPElement[Name='System!System.Entity']/DisplayName$", "")
@@ -150,7 +162,7 @@ try
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/BuildNumber$", $item.BuildNumber)
 				}
-			  else
+				else
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/BuildNumber$", "")
 				}
@@ -159,7 +171,7 @@ try
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/CSDVersion$", $item.CSDVersion)
 				}
-			  else
+				else
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/CSDVersion$", "")
 				}
@@ -168,7 +180,7 @@ try
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/ServicePackVersion$", $($item.ServicePackMajorVersion.ToString() + "." + $item.ServicePackMinorVersion.ToString()))
 				}
-			  else
+				else
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/ServicePackVersion$", "")
 				}
@@ -177,7 +189,7 @@ try
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/SerialNumber$", $item.SerialNumber)
 				}
-			  else
+				else
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/SerialNumber$", "")
 				}
@@ -187,7 +199,7 @@ try
 					$dateTime = $item.InstallDate.ToString().Split(" ")
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/InstallDate$", $($dateTime[0] + " " + $dateTime[1]))
 				}
-			  else
+				else
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/InstallDate$", "")
 				}
@@ -197,7 +209,7 @@ try
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/SystemDrive$", $item.WindowsDirectory.substring(0,2))
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/WindowsDirectory$", $item.WindowsDirectory)
 				}
-			  else
+				else
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/SystemDrive$", "")
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/WindowsDirectory$", "")
@@ -207,7 +219,7 @@ try
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/PhysicalMemory$", $item.TotalVisibleMemorySize)
 				}
-			  else
+				else
 				{
 					$windowsOS.AddProperty("$MPElement[Name='Windows!Microsoft.Windows.OperatingSystem']/PhysicalMemory$", "")
 				}

@@ -134,15 +134,28 @@ function ForestFromDomainDNS($strDNSDomain)
 #-----------------------------------------------------------
 # Returns the NetBIOS domain name from the DNS domain name
 #-----------------------------------------------------------
-function NetBIOSDomainFromDN($strDNSComputerName)
+function NetBIOSDomainFromDN($strNetBIOSComputerName)
 {
     if($Is_OS_More_Than_2012)
 	{
-      $DnsObject = Get-CimInstance -Classname Win32_ComputerSystem
+		try
+		{
+			$DnsObject = Get-CimInstance -Classname Win32_ComputerSystem -ComputerName $strNetBIOSComputerName -ErrorAction SilentlyContinue -ErrorVariable wmiError
+			if($wmiError)
+			{
+				$DnsObject = Get-CimInstance -Classname Win32_ComputerSystem -ErrorAction Stop
+				$wmiError = $Null
+			}
+		}
+		catch
+		{
+			LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieving OS info.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+		}
+		
     }
 	else
 	{
-      $DnsObject = Get-WmiObject -Class Win32_ComputerSystem
+      $DnsObject = Get-WmiObject -Class Win32_ComputerSystem -ComputerName $strNetBIOSComputerName
     }
     return $DnsObject.Domain
 }
@@ -151,16 +164,28 @@ function NetBIOSDomainFromDN($strDNSComputerName)
 #-------------------------------------------------------------
 # Gets the IP addresses for the given computer name
 #-------------------------------------------------------------
-function GetIPAddresses($strDNSComputerName)
+function GetIPAddresses($strNetBIOSComputerName)
 {
     $strIPs =""
     if($Is_OS_More_Than_2012)
 	{
-      $arrItems = Get-CimInstance -Classname Win32_NetworkAdapterConfiguration
+		try
+		{
+			$arrItems = Get-CimInstance -Classname Win32_NetworkAdapterConfiguration -ComputerName $strNetBIOSComputerName -ErrorAction SilentlyContinue -ErrorVariable wmiError
+			if($wmiError)
+			{
+				$arrItems = Get-CimInstance -Classname Win32_NetworkAdapterConfiguration -ErrorAction Stop
+				$wmiError = $Null
+			}
+		}
+		catch
+		{
+			LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieving NIC info.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+		}
     }
 	else
     {
-      $arrItems = Get-WmiObject -Class Win32_NetworkAdapterConfiguration
+      $arrItems = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -ComputerName $strNetBIOSComputerName
     }
     foreach($arrItem in $arrItems)
     {
@@ -339,17 +364,26 @@ try
 			{   
 				try
 				{
-					$objComputer = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+					if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) )
+					{
+						# Stop if one cannot use Get-CimInstance CMDlet
+						Import-Module -Name cimcmdlets -ErrorAction Stop
+					}					
+					$objComputer = Get-CimInstance -Namespace "root\cimv2" -Query $query -ComputerName $strNetBIOSComputerName -ErrorAction SilentlyContinue -ErrorVariable wmiError
+					if($wmiError)
+					{
+						$objComputer = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+						$wmiError = $Null
+					}
 				}
 				catch
 				{
-				  import-module cimcmdlets
-				  $objComputer = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+					LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing OS data from WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
 				}
 			}
 			else
 			{
-				$objComputer = Get-WmiObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+				$objComputer = Get-WmiObject -Namespace "root\cimv2" -Query $query -ComputerName $strNetBIOSComputerName -ErrorAction Stop
 			}
         
 			$strDomainDNsName = $objComputer.Domain
@@ -374,11 +408,23 @@ try
 			$query = "Select Domain, Name, NumberOfLogicalProcessors, NumberOfProcessors from Win32_ComputerSystem"
 			if($Is_OS_More_Than_2012)
 			{
-			  $colSettings = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+				 try
+				 {
+				  $colSettings = Get-CimInstance -Namespace "root\cimv2" -Query $query -ComputerName $strNetBIOSComputerName -ErrorAction SilentlyContinue -ErrorVariable wmiError
+				  if($wmiError)
+				  {
+					$colSettings = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+					$wmiError = $Null
+				  }
+				}
+				catch
+				{
+					LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing logical processors.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+				}
 			}
 			else
 			{
-			  $colSettings = Get-WmiObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+			  $colSettings = Get-WmiObject -Namespace "root\cimv2" -Query $query -ComputerName $strNetBIOSComputerName -ErrorAction Stop
 			}
 			$objComputer = $colSettings.item()
 			$strDomainDNsName = $objComputer.Domain
@@ -405,10 +451,10 @@ try
     
 		if ($strDomainDN -ne $null)
 		{
-		  $strNetBIOSDomain = NetBIOSDomainFromDN $strDNSComputerName
+		  $strNetBIOSDomain = NetBIOSDomainFromDN $strNetBIOSComputerName
 		}
     
-		$strIPAddresses = GetIPAddresses $strDNSComputerName
+		$strIPAddresses = GetIPAddresses $strNetBIOSComputerName
 
 		$ADSISearcher = New-Object System.DirectoryServices.DirectorySearcher
 		$ADSISearcher.Filter = '(&(dnshostname=' + $strDNSComputerName + ')(name=' + $strNetBIOSComputerName + ')(objectClass=computer))'
