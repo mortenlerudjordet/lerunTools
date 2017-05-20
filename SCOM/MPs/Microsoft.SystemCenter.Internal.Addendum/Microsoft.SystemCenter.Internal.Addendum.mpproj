@@ -6,7 +6,7 @@
     <RootNamespace>Microsoft.SystemCenter.Internal.Addendum</RootNamespace>
     <Name>Microsoft SystemCenter Interna Addendum</Name>
     <ManagementPackName>Microsoft.SystemCenter.Internal.Addendum</ManagementPackName>
-    <Version>1.0.0.0</Version>
+    <Version>1.0.1.0</Version>
     <MpFrameworkVersion>v7.0.2</MpFrameworkVersion>
     <MpFrameworkProfile>OM</MpFrameworkProfile>
     <ProductVersion>1.1.0.0</ProductVersion>
