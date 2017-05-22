@@ -3,7 +3,6 @@
     <ModuleTypes>
       <ProbeActionModuleType ID="Microsoft.SystemCenter.WMIFunctionalCheckAddendum.Probe" Accessibility="Internal" Batching="false" PassThrough="false">
         <Configuration>
-          <xsd:element minOccurs="1" name="ComputerName" type="xsd:string"/>
           <xsd:element minOccurs="1" name="TimeoutSeconds" type="xsd:integer"/>
           <xsd:element minOccurs="1" name="LogLevelText" type="xsd:string"/>
         </Configuration>
@@ -18,10 +17,6 @@
                 <ScriptName>WMIFunctionalCheck.ps1</ScriptName>
                 <ScriptBody>$IncludeFileContent/WMIFunctionalCheck.ps1$</ScriptBody>
                 <Parameters>
-                  <Parameter>
-                    <Name>ComputerName</Name>
-                    <Value>$Config/ComputerName$</Value>
-                  </Parameter>
                   <Parameter>
                     <Name>LogLevelText</Name>
                     <Value>$Config/LogLevelText$</Value>

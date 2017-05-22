@@ -27,7 +27,6 @@
               </Scheduler>
             </DataSource>
             <ProbeAction TypeID="Microsoft.SystemCenter.WMIFunctionalCheckAddendum.Probe" ID="Probe">
-              <ComputerName>$Target/Host/Property[Type="Windows!Microsoft.Windows.Computer"]/NetworkName$</ComputerName>
               <TimeoutSeconds>$Config/TimeoutSeconds$</TimeoutSeconds>
               <LogLevelText>$Config/LogLevelText$</LogLevelText>
             </ProbeAction>

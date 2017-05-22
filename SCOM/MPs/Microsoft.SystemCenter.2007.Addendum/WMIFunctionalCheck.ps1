@@ -8,31 +8,8 @@
 # $File:        WMIFunctionalCheck.ps1 $
 #*************************************************************************
 Param(
-	[String]$ComputerName,
-	[String]$LogLevelText
+	[String]$LogLevelText = "Debug"
 )
-
-#OS version for Win 2012
-$WIN_OS_2012_Ver = "6.2"
-$OSRegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\"
-
-#******************************************************************************
-#   FUNCTION:       CheckMinOSVer
-#   DESCRIPTION:    Returns True if the Registry Key for CurrentVersion
-#                   is equal or Higher than the Minimum OS Versions Number.
-#   PARAMETER:      DblMinVer Minimum Version Number to use
-#   RETURNS:        Boolean: True, if build is greater or equal than the given number
-#******************************************************************************
-function CheckByOSCurrentVersion #As Boolean
-{
-    $strCurrentOSVer = Get-ItemProperty $OSRegistryKey
-    $strCurrentOSVer = $strCurrentOSVer.CurrentVersion
-    if($strCurrentOSVer -ge $WIN_OS_2012_Ver)
-	{
-		return $true
-	}
-    return $false
-}
 
 #==================================================================================
 # Func:		LogEvent
@@ -73,95 +50,6 @@ if($EventType -le $LogLevel)
 }
 
 #---------------------------------------------------------------------------
-# Retrieves the script output.
-#---------------------------------------------------------------------------
-function ReturnResponse
-{
-Param(
-	[Bool]$ErrorFlag,
-	[String]$Message
-)
-
-    if($ErrorFlag -eq $true)
-    {
-        $propertyBag.AddValue("Status", "FAIL")
-        $propertyBag.AddValue("ErrorMessage", $Message)
-        LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage $Message
-    }
-    else
-    {
-        $propertyBag.AddValue("Status", "OK")
-        LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage $Message
-    }
-
-    $propertyBag
-}
-
-
-#---------------------------------------------------------------------------
-# Execute a WMI Query.
-#---------------------------------------------------------------------------
-function ExecuteWMIQuery
-{
-Param(
-	[String]$targetComputer,
-	[String]$BaseClass,
-	[String]$Query,
-	[String]$PropertyName
-)
-
-if($isHigherThanWin08 -eq $true)
-{
-    try{
-		# Check if CIM methods are loaded
-        if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) )
-        {
-		    # Stop if one cannot use Get-CimInstance CMDlet
-            Import-Module -Name cimcmdlets -ErrorAction Stop
-	    }
-            LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Using COM to get WMI data"
-            # Use COM instead if all WinRM connection attempts fail
-            $wbemObjectSet = Get-CimInstance -Namespace $("root\$($BaseClass)") -Query $Query -ErrorAction Stop
-	}
-    catch{
-        # Log unhandeled execption
-        LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Failed to get wmi data.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-    }
-}
-else
-{
-    $wbemObjectSet = Get-WMIObject -Namespace $("root\" + $BaseClass) -Query $Query
-}
-foreach($objItem in $wbemObjectSet)
-{
-    $temp = $objItem.$PropertyName
-}
-return $temp
-}
-
-
-#---------------------------------------------------------------------------
-# Gets WMI Status.
-#---------------------------------------------------------------------------
-function GetWMIStatus
-{
-Param(
-	[String]$ComputerName
-)
-
-
-    $status = ExecuteWMIQuery -targetComputer $ComputerName -BaseClass "cimv2" -Query "select Status from win32_operatingsystem" -PropertyName "Status"
-
-    if($status -eq "OK")
-    {
-        return "OK"
-    }
-    else
-    {
-        return "FAIL"
-    }
-}
-#---------------------------------------------------------------------------
 # Main
 #---------------------------------------------------------------------------
 
@@ -197,42 +85,67 @@ Switch($LogLevelText)
 # Alternate way to write to eventlog for SCOM
 Write-EventLog -EventId $EventId -LogName 'Operations Manager' -Source 'Health Service Script' -EntryType Information -Message "$($SCRIPT_NAME): Executing with loglevel: $LogLevelText" -ErrorAction SilentlyContinue
 
-Try
+try
 {
-	#Check the OS version
-	$isHigherThanWin08 = CheckByOSCurrentVersion
 
 	#Create PropertyBag object
 	$SCOMapi = new-object -comObject "MOM.ScriptAPI"
-	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Time started: $((Get-Date).ToString("HH:mm:ss"))"
+	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Starting script. Running as: $(whoami)"
 
 	$propertyBag = $SCOMapi.CreatePropertyBag()
 
-	$error.Clear()
-
-	#Set variables
-	LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Retrieving WMI Status"
-	$strWMIStatus = GetWMIStatus -ComputerName $ComputerName
-	LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "WMI Status: $strWMIStatus"
-	if($error.Count -ne 0)
+	$strBaseClass="cimv2"
+	$strQuery="select Status from win32_operatingsystem"
+	try
 	{
-		$strMessageToUse = "Script WMIFunctionalCheck executed with Errors.`nError Details: " + $error[0]
-		ReturnResponse -ErrorFlag $true -Message $strMessageToUse
+        # Check if CIM methods are loaded
+        if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) )
+        {
+		    # Stop if one cannot use Get-CimInstance CMDlet
+            Import-Module -Name cimcmdlets -ErrorAction Stop
+	    }
+		try
+		{
+			LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Retrieveing WMI data using Get-CimInstance"
+			$wbemObjectSet = Get-CimInstance -Namespace $("root\$($strBaseClass)") -Query $strQuery -ErrorAction Stop
+		}
+		catch
+		{
+			LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Falling back to use alternate metod to retrieve WMI data using Get-WMIObject"
+			$wbemObjectSet = Get-WMIObject -Namespace $("root\$($strBaseClass)") -Query $strQuery -ErrorAction Stop
+		}
 	}
-	else
-	{
-		$strMessageToUse = "Script WMIFunctionalCheck executed Successfully"
-		ReturnResponse -ErrorFlag $false -Message $strMessageToUse
-	}
+	catch{
+		# execute outer catch
+		Write-Error -Message "Failed to get wmi data.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)" -ErrorAction Stop
+    }
 }
-Catch
+catch
 {	
-	LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error running script.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-	LogEvent -EventNr $EventId -EventType $EVENT_DEBUG   `
-	-LogMessage "Debug:`n$($_.InvocationInfo.MyCommand.Name)`n$($_.ErrorDetails.Message)`n$($_.InvocationInfo.PositionMessage)`n$($_.CategoryInfo.ToString())`n$($_.FullyQualifiedErrorId)"
+	$propertyBag.AddValue("Status", "FAIL")
+	$Message = "Script WMIFunctionalCheck executed with Errors.`nError Details: $($_.Exception.Message)"
+	$propertyBag.AddValue("ErrorMessage", $Message)
+	LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Script WMIFunctionalCheck executed with Errors.`nError Details:`n$($_.Exception.Message)"
+	LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Debug:`n$($_.InvocationInfo.MyCommand.Name)`n$($_.ErrorDetails.Message)`n$($_.InvocationInfo.PositionMessage)`n$($_.CategoryInfo.ToString())`n$($_.FullyQualifiedErrorId)"
 }
-Finally
+finally
 {
+	if($wbemObjectSet.Status -eq "OK")
+    {
+		$propertyBag.AddValue("Status", "OK")
+        $Message = "Script WMIFunctionalCheck executed Successfully"
+		LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage $Message
+    }
+    
+	if($LogLevelText -eq "Debug") 
+	{
+		$SCOMapi.Return($propertyBag)
+	}
+	else 
+	{
+		$propertyBag
+	}
+	
 	$Time.Stop()
-	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script Finished`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
+	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script has completed.`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
 }

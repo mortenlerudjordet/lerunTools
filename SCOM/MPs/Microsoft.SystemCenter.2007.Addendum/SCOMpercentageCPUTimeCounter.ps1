@@ -178,7 +178,7 @@ Try
 
 	#Create PropertyBag object
 	$oAPI = new-object -comObject "MOM.ScriptAPI"
-	LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Time started: $((Get-Date).ToString("HH:mm:ss"))"
+	LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Starting script. Running as: $(whoami)"
 
 	$oPropertyBag = $oAPI.CreatePropertyBag()
 
@@ -402,11 +402,7 @@ Try
 		}
 		$finalPercentProcessorTime = ($finalPercentProcessorTime/$dataCount)/$procCount
 	}
-	else
-	{
-		LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Failed to retrieve status data through WMI. `nError: $wbemError"
-		$wbemError = $Null
-	}
+
 	if($ConfigForRun -eq $false)
 	{
 		$oPropertyBag.AddValue("SCOMpercentageCPUTime", $finalPercentProcessorTime)
