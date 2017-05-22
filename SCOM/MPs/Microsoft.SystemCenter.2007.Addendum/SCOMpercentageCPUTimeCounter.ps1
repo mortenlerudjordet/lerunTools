@@ -92,31 +92,19 @@ $PercentProcessorTime   = 0
     $query = "Select * from Win32_PerfRawData_PerfProc_Process where IDProcess = ""$procId"""
     if($isHigherThanWin08 -eq $true)
     {
-        LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $ComputerName to get raw performance data from WMI"
-		$objService1 = Get-CimInstance -Namespace "root\cimv2" -ComputerName $ComputerName -Query $query -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-        if($wbemError) {
-            # Log Error as Info in eventlog
-            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-            $wbemError = $Null
-            # Get netbios name from FQDN
-            $ComputerNameNetbios = $ComputerName.split(".")[0]
-            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $ComputerNameNetbios to get raw performance data from WMI"
-            # Try to use netbios computer name instead of FQDN/DNS
-			$objService1 = Get-CimInstance -ComputerName $ComputerNameNetbios -Namespace "root\cimv2" -Query $query -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-            if($wbemError) {
-                # Log Error as Info in eventlog
-                LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-                $wbemError = $Null
-                LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI raw performance data instead of WinRM"
-                # Use COM instead if all WinRM connection attempts fail
-				$objService1 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
-            }
+		Try
+		{			
+			# Use COM instead if all WinRM connection attempts fail
+			$objService1 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+		}
+		Catch
+		{
+			# Log unhandeled execption
+			LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive performance data through WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
 		}
     }
 	else{
-        $objService1 = Get-WMIObject -Namespace "root\cimv2" -ComputerName $ComputerName -Query $query
+        $objService1 = Get-WMIObject -Namespace "root\cimv2" -Query $query
     }
     ForEach($objInstance1 in $objService1)
 {
@@ -127,31 +115,20 @@ $PercentProcessorTime   = 0
   Start-Sleep 1
    if($isHigherThanWin08 -eq $true)
     {
-        LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $ComputerName to get 2nd round of raw performance data from WMI"
-		$objService2 = Get-CimInstance -Namespace "root\cimv2" -ComputerName $ComputerName -Query $query -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-        if($wbemError) {
-            # Log Error as Info in eventlog
-            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-            $wbemError = $Null
-            # Get netbios name from FQDN
-            $ComputerNameNetbios = $ComputerName.split(".")[0]
-            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $ComputerNameNetbios to get 2nd round of raw performance data from WMI"
-            # Try to use netbios computer name instead of FQDN/DNS
-			$objService2 = Get-CimInstance -ComputerName $ComputerNameNetbios -Namespace "root\cimv2" -Query $query -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-            if($wbemError) {
-                # Log Error as Info in eventlog
-                LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-                $wbemError = $Null
-                LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI 2nd round of raw performance data instead of WinRM"
-                # Use COM instead if all WinRM connection attempts fail
-				$objService2 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
-            }
+        Try
+		{
+			LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI 2nd round of raw performance data"
+			# Use COM instead if all WinRM connection attempts fail
+			$objService2 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+		}
+		Catch
+		{
+			# Log unhandeled execption
+			LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive second round of performance data.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
 		}
     }
 	else{
-        $objService2 = Get-WMIObject -Namespace "root\cimv2" -ComputerName $ComputerName -Query $query
+        $objService2 = Get-WMIObject -Namespace "root\cimv2" -Query $query
     }
     ForEach($objInstance2 in $objService2)
 	{
@@ -222,29 +199,10 @@ Try
 				# Stop if one cannot use Get-CimInstance CMDlet
 				Import-Module -Name cimcmdlets -ErrorAction Stop
 			}
-			LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $ComputerName to get data from WMI"
-			$checker = Get-CimInstance -ComputerName $ComputerName -Namespace "root\cimv2" -Class "Win32_Process" -ErrorAction SilentlyContinue -ErrorVariable wbemError
 
-			if($wbemError) {
-				# Log Error as Info in eventlog
-				LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-				$wbemError = $Null
-				# Get netbios name from FQDN
-				$ComputerNameNetbios = $ComputerName.split(".")[0]
-				LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $ComputerNameNetbios to get data from WMI"
-				# Try to use netbios computer name instead of FQDN/DNS
-				$checker = Get-CimInstance -ComputerName $ComputerNameNetbios -Namespace "root\cimv2" -Class "Win32_Process" -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-				if($wbemError) {
-					# Log Error as Info in eventlog
-					LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-					$wbemError = $Null
-					LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI data instead of WinRM"
-					# Use COM instead if all WinRM connection attempts fail
-					$checker = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_Process" -ErrorAction Stop -ErrorVariable wbemError
-				}
-			}
-
+			LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI data"
+			# Use COM instead if all WinRM connection attempts fail
+			$checker = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_Process" -ErrorAction Stop
 		}
 		catch
 		{
@@ -254,7 +212,7 @@ Try
 	}
 	else
 	{
-		$checker = Get-WMIObject -Namespace "root\cimv2" -ComputerName $ComputerName -Class "Win32_Process"
+		$checker = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_Process"
 	}
 
 	if($checker -ne $null)
@@ -267,27 +225,9 @@ Try
 			{
 				try 
 				{
-					$processorList = Get-CimInstance -Namespace "root\cimv2" -ComputerName $ComputerName -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-					if($wbemError) {
-						# Log Error as Info in eventlog
-						LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-						$wbemError = $Null
-						# Get netbios name from FQDN
-						$ComputerNameNetbios = $ComputerName.split(".")[0]
-						LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $ComputerNameNetbios to get get number of CPU cores data from WMI"
-						# Try to use netbios computer name instead of FQDN/DNS
-						$processorList = Get-CimInstance -ComputerName $ComputerNameNetbios -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-						if($wbemError) {
-							# Log Error as Info in eventlog
-							LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-							$wbemError = $Null
-							LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get number of CPU cores data instead of WinRM"
-							# Use COM instead if all WinRM connection attempts fail
-							$processorList = Get-CimInstance -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction Stop
-						}
-					}
+					LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get number of CPU cores data"
+					# Use COM to get WMI data
+					$processorList = Get-CimInstance -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction Stop
 				}
 				catch 
 				{
@@ -296,7 +236,7 @@ Try
 			}
 			else
 			{
-				$processorList = Get-WMIObject -Namespace "root\cimv2" -ComputerName $ComputerName -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction stop
+				$processorList = Get-WMIObject -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction stop
 			}
 			if($processorList -ne $null)
 			{
@@ -333,27 +273,10 @@ Try
 				{
 					try
 					{
-						$processes = Get-CimInstance -Namespace "root\cimv2" -ComputerName $ComputerName -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction SilentlyContinue -ErrorVariable wbemError
+						LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get ProcessId, ParentProcessId data"
+						# Use COM 
+						$processes = Get-CimInstance -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction Stop
 
-						if($wbemError) {
-							# Log Error as Info in eventlog
-							LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-							$wbemError = $Null
-							# Get netbios name from FQDN
-							$ComputerNameNetbios = $ComputerName.split(".")[0]
-							LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $ComputerNameNetbios to get get ProcessId, ParentProcessId data from WMI"
-							# Try to use netbios computer name instead of FQDN/DNS
-							$processes = Get-CimInstance -ComputerName $ComputerNameNetbios -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-							if($wbemError) {
-								# Log Error as Info in eventlog
-								LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-								$wbemError = $Null
-								LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get ProcessId, ParentProcessId data instead of WinRM"
-								# Use COM instead if all WinRM connection attempts fail
-								$processes = Get-CimInstance -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction Stop
-							}
-						}
 					}
 					catch 
 					{
@@ -362,7 +285,7 @@ Try
 				}
 				else
 				{
-					$processes = Get-WMIObject -Namespace "root\cimv2" -ComputerName $ComputerName -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction stop
+					$processes = Get-WMIObject -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction stop
 				}
 				if($processes -ne $null)
 				{
@@ -382,7 +305,7 @@ Try
 					# Step 3: Get all the child processes
 					$childFound = $true
 					# While a new child is found, re-iterate the list to find its child
-					DO
+					Do
 					{
 						$childFound = $false
 						foreach($process in $processes)
@@ -410,28 +333,9 @@ Try
 					{
 						try
 						{
-							LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Getting the total cpu percentage used for all the SCOM processes"
-							$wmiService =  Get-CimInstance -Namespace "root\cimv2" -ComputerName $ComputerName -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-							if($wbemError) {
-								# Log Error as Info in eventlog
-								LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-								$wbemError = $Null
-								# Get netbios name from FQDN
-								$ComputerNameNetbios = $ComputerName.split(".")[0]
-								LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $ComputerNameNetbios to get get performance counter data from WMI"
-								# Try to use netbios computer name instead of FQDN/DNS
-								$wmiService = Get-CimInstance -ComputerName $ComputerNameNetbios -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-								if($wbemError) {
-									# Log Error as Info in eventlog
-									LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage $wbemError
-									$wbemError = $Null
-									LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get performance counter data instead of WinRM"
-									# Use COM instead if all WinRM connection attempts fail
-									$wmiService = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction Stop
-								}
-							}
+							LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get performance counter data"
+							# Use COM 
+							$wmiService = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction Stop
 						}
 						catch
 						{
@@ -440,7 +344,7 @@ Try
 					}
 					else
 					{
-						$wmiService =  Get-WMIObject -Namespace "root\cimv2" -ComputerName $ComputerName -Class "Win32_PerfFormattedData_PerfProc_Process"
+						$wmiService =  Get-WMIObject -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process"
 					}
 					$totalPercentProcessorTime = 0
 

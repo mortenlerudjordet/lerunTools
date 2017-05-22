@@ -119,39 +119,18 @@ if($isHigherThanWin08 -eq $true)
 		    # Stop if one cannot use Get-CimInstance CMDlet
             Import-Module -Name cimcmdlets -ErrorAction Stop
 	    }
-        LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $targetComputer to get data from WMI"
-        $wbemObjectSet = Get-CimInstance -ComputerName $targetComputer -Namespace $("root\" + $BaseClass) -Query $Query -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-        if($wbemError) {
-            $error.Clear()
-            # Log Error as Info in eventlog
-            LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage $wbemError
-            $wbemError = $Null
-            # Get netbios name from FQDN
-            $targetComputerNetbios = $targetComputer.split(".")[0]
-            LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Trying to connect through WinRM using computer name:  $targetComputerNetbios to get data from WMI"
-            # Try to use netbios computer name instead of FQDN/DNS
-            $wbemObjectSet = Get-CimInstance -ComputerName $targetComputerNetbios -Namespace $("root\" + $BaseClass) -Query $Query -ErrorAction SilentlyContinue -ErrorVariable wbemError
-
-            if($wbemError) {
-                $error.Clear()
-                # Log Error as Info in eventlog
-                LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage $wbemError
-                $wbemError = $Null
-                LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Using COM to get WMI data instead of WinRM"
-                # Use COM instead if all WinRM connection attempts fail
-                $wbemObjectSet = Get-CimInstance -Namespace $("root\" + $BaseClass) -Query $Query -ErrorAction Continue
-            }
-        }
+            LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Using COM to get WMI data"
+            # Use COM instead if all WinRM connection attempts fail
+            $wbemObjectSet = Get-CimInstance -Namespace $("root\$($BaseClass)") -Query $Query -ErrorAction Stop
 	}
     catch{
         # Log unhandeled execption
-        LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage $_.Exception.Message
+        LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Failed to get wmi data.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
     }
 }
 else
 {
-    $wbemObjectSet = Get-WMIObject -Namespace $("root\" + $BaseClass) -ComputerName $targetComputer -Query $Query
+    $wbemObjectSet = Get-WMIObject -Namespace $("root\" + $BaseClass) -Query $Query
 }
 foreach($objItem in $wbemObjectSet)
 {
