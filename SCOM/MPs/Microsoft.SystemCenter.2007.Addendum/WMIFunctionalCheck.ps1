@@ -106,12 +106,6 @@ try
 	$strQuery="select Status from win32_operatingsystem"
 	try
 	{
-        # Check if CIM methods are loaded
-        if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) )
-        {
-		    # Stop if one cannot use Get-CimInstance CMDlet
-            Import-Module -Name cimcmdlets -ErrorAction Stop
-	    }
 		try
 		{
 			LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Retrieveing WMI data using Get-CimInstance"
@@ -119,8 +113,17 @@ try
 		}
 		catch
 		{
-			LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Falling back to use alternate metod to retrieve WMI data using Get-WMIObject"
-			$wbemObjectSet = Get-WMIObject -Namespace $("root\$($strBaseClass)") -Query $strQuery -ErrorAction Stop
+			try
+			{
+				LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Trying to import cimcmdlets"
+				Import-Module -Name cimcmdlets -ErrorAction Stop
+				$wbemObjectSet = Get-CimInstance -Namespace $("root\$($strBaseClass)") -Query $strQuery -ErrorAction Stop
+			}
+			catch
+			{
+				LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Falling back to use alternate metod to retrieve WMI data using Get-WMIObject"
+				$wbemObjectSet = Get-WMIObject -Namespace $("root\$($strBaseClass)") -Query $strQuery -ErrorAction Stop
+			}
 		}
 	}
 	catch{
@@ -134,7 +137,6 @@ catch
 	$Message = "Script WMIFunctionalCheck executed with Errors.`nError Details: $($_.Exception.Message)"
 	$propertyBag.AddValue("ErrorMessage", $Message)
 	LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Script WMIFunctionalCheck executed with Errors.`nError Details:`n$($_.Exception.Message)"
-	LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage "Debug:`n$($_.InvocationInfo.MyCommand.Name)`n$($_.ErrorDetails.Message)`n$($_.InvocationInfo.PositionMessage)`n$($_.CategoryInfo.ToString())`n$($_.FullyQualifiedErrorId)"
 }
 finally
 {
