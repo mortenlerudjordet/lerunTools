@@ -1,8 +1,8 @@
 ﻿Param(
-	[string]$ComputerName,
-	[string]$ConfigForRun,
-	[int]$ProcessIterationCount,
-	[String]$LogLevelText = "CommandLine"
+    [string]$ComputerName,
+    [string]$ConfigForRun,
+    [int]$ProcessIterationCount,
+    [String]$LogLevelText = "CommandLine"
 )
 #Process Arguments:
 # 0 - ComputerIdentity
@@ -34,9 +34,9 @@ function CheckByOSCurrentVersion() #As Boolean
     $strCurrentOSVer = Get-ItemProperty $OSRegistryKey
     $strCurrentOSVer = $strCurrentOSVer.CurrentVersion
     if($strCurrentOSVer -ge $WIN_OS_2012_Ver)
-	{
-		return $true;
-	}
+    {
+        return $true;
+    }
     return $false;
 }
 
@@ -48,69 +48,69 @@ function CheckByOSCurrentVersion() #As Boolean
 function LogEvent
 {
 Param(
-	[Int]$EventNr,
-	[Int]$EventType,
-	[String]$LogMessage
+    [Int]$EventNr,
+    [Int]$EventType,
+    [String]$LogMessage
 )
 
 $LogMessage = "`n" + $LogMessage
 if($EventType -le $LogLevel)
 {
-	Switch($EventType)
-	{
-		1 {
-			if($LogLevelText -eq "CommandLine") 
+    Switch($EventType)
+    {
+        1 {
+            if($LogLevelText -eq "CommandLine") 
             {
-			    # Run from command line and log to screen
-			    Write-Verbose -Message $LogMessage
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
             }
             else
             {
                 # Error
-			    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
+                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
             }
 
-		}
-		2 {
-			if($LogLevelText -eq "CommandLine") 
+        }
+        2 {
+            if($LogLevelText -eq "CommandLine") 
             {
-			    # Run from command line and log to screen
-			    Write-Verbose -Message $LogMessage
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
             }
             else
             {
                 # Warning
-			    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
+                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
             }
 
-		}
-		4 {
-			if($LogLevelText -eq "CommandLine") 
+        }
+        4 {
+            if($LogLevelText -eq "CommandLine") 
             {
-			    # Run from command line and log to screen
-			    Write-Verbose -Message $LogMessage
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
             }
             else
             {
                 # Information
-			    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
             }
-	
-		}
-		5 {
-			if($LogLevelText -eq "CommandLine") 
+    
+        }
+        5 {
+            if($LogLevelText -eq "CommandLine") 
             {
-			    # Run from command line and log to screen
-			    Write-Verbose -Message $LogMessage
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
             }
             else
             {
                 # Debug
-			    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
             }
-	
-		}	
-	}
+    
+        }	
+    }
 }
 }
 
@@ -128,18 +128,18 @@ $Dd = 0
     $query = "Select * from Win32_PerfRawData_PerfProc_Process where IDProcess = ""$procId"""
     if($isHigherThanWin08 -eq $true)
     {
-		Try
-		{			
-			# Use COM instead if all WinRM connection attempts fail
-			$objService1 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
-		}
-		Catch
-		{
-			# Log unhandeled execption
-			LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive performance data through WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-		}
+        Try
+        {			
+            # Use COM instead if all WinRM connection attempts fail
+            $objService1 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+        }
+        Catch
+        {
+            # Log unhandeled execption
+            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive performance data through WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+        }
     }
-	else{
+    else{
         $objService1 = Get-WMIObject -Namespace "root\cimv2" -Query $query
     }
     ForEach($objInstance1 in $objService1)
@@ -152,25 +152,25 @@ $Dd = 0
    if($isHigherThanWin08 -eq $true)
    {
         try
-	    {
-		    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI 2nd round of raw performance data"
-		    # Use COM instead if all WinRM connection attempts fail
-		    $objService2 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
-	    }
-	    catch
-	    {
-		    # Log unhandeled execption
-		    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive second round of performance data.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-	    }
+        {
+            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI 2nd round of raw performance data"
+            # Use COM instead if all WinRM connection attempts fail
+            $objService2 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+        }
+        catch
+        {
+            # Log unhandeled execption
+            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive second round of performance data.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+        }
     }
-	else{
+    else{
         $objService2 = Get-WMIObject -Namespace "root\cimv2" -Query $query
     }
     ForEach($objInstance2 in $objService2)
-	{
+    {
         $N2 = $objInstance2.PercentProcessorTime
         $D2 = $objInstance2.TimeStamp_Sys100NS
-	}
+    }
 
     $Nd = $N2-$N1
     LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Difference for precent processor time: $Nd"
@@ -206,13 +206,13 @@ Switch($LogLevelText)
     'Information' {
         $LogLevel = 4
     }
-	'Debug' {
+    'Debug' {
         $LogLevel = 5
     }
-	'CommandLine' {
-		$VerbosePreference="Continue"
-		$LogLevel = 6
-	}
+    'CommandLine' {
+        $VerbosePreference="Continue"
+        $LogLevel = 6
+    }
     Default {
         $LogLevel = 1
     }
@@ -224,258 +224,258 @@ Write-EventLog -EventId $SCRIPT_EVENT_ID -LogName 'Operations Manager' -Source '
 
 Try 
 {
-	#Check the OS version
-	$isHigherThanWin08 = CheckByOSCurrentVersion
+    #Check the OS version
+    $isHigherThanWin08 = CheckByOSCurrentVersion
 
-	#Create PropertyBag object
-	$oAPI = new-object -comObject "MOM.ScriptAPI"
-	LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Starting script. Running as: $(whoami)"
+    #Create PropertyBag object
+    $oAPI = new-object -comObject "MOM.ScriptAPI"
+    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Starting script. Running as: $(whoami)"
 
-	$oPropertyBag = $oAPI.CreatePropertyBag()
+    $oPropertyBag = $oAPI.CreatePropertyBag()
 
-	#Set the retry attempts for WMI and other counters
-	$retryAttempts = 2
-	$dataCount = 0
+    #Set the retry attempts for WMI and other counters
+    $retryAttempts = 2
+    $dataCount = 0
 
-	#Get WMI object
-	$finalPercentProcessorTime = 0
-	$procCount = 0
-	$checker = $null
-	if($isHigherThanWin08 -eq $true)
-	{
-		try{
-			# Check if CIM methods are loaded
-			if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) )
-			{
-				# Stop if one cannot use Get-CimInstance CMDlet
-				Import-Module -Name cimcmdlets -ErrorAction Stop
-			}
+    #Get WMI object
+    $finalPercentProcessorTime = 0
+    $procCount = 0
+    $checker = $null
+    if($isHigherThanWin08 -eq $true)
+    {
+        try{
+            # Check if CIM methods are loaded
+            if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) )
+            {
+                # Stop if one cannot use Get-CimInstance CMDlet
+                Import-Module -Name cimcmdlets -ErrorAction Stop
+            }
 
-			LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI data"
-			# Use COM instead if all WinRM connection attempts fail
-			$checker = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_Process" -ErrorAction Stop
-		}
-		catch
-		{
-			# Log unhandeled execption
-			LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive data through WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-		}
-	}
-	else
-	{
-		$checker = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_Process"
-	}
+            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI data"
+            # Use COM instead if all WinRM connection attempts fail
+            $checker = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_Process" -ErrorAction Stop
+        }
+        catch
+        {
+            # Log unhandeled execption
+            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive data through WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+        }
+    }
+    else
+    {
+        $checker = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_Process"
+    }
 
-	if($checker -ne $null)
-	{
-		LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "WMI check successful"
-		for($counter=0;$counter -lt $retryAttempts;$counter++)
-		{
-			# Get the number of cores in the system
-			if($isHigherThanWin08 -eq $true)
-			{
-				try 
-				{
-					LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get number of CPU cores data"
-					# Use COM to get WMI data
-					$processorList = Get-CimInstance -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction Stop
-				}
-				catch 
-				{
-					LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive number of CPUs.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-				}
-			}
-			else
-			{
-				$processorList = Get-WMIObject -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction stop
-			}
-			if($processorList -ne $null)
-			{
-				LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "WMI query successful.`nNumber of cores found: $($processorList.NumberOfCores)"
-				foreach($processor in $processorList)
-				{
-					$procCount = $procCount + $processor.NumberOfCores
-				}
-				break
-			}
-		}
-		if($procCount -lt 1)
-		{
-			$procCount = 1
-		}
+    if($checker -ne $null)
+    {
+        LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "WMI check successful"
+        for($counter=0;$counter -lt $retryAttempts;$counter++)
+        {
+            # Get the number of cores in the system
+            if($isHigherThanWin08 -eq $true)
+            {
+                try 
+                {
+                    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get number of CPU cores data"
+                    # Use COM to get WMI data
+                    $processorList = Get-CimInstance -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction Stop
+                }
+                catch 
+                {
+                    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive number of CPUs.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+                }
+            }
+            else
+            {
+                $processorList = Get-WMIObject -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction stop
+            }
+            if($processorList -ne $null)
+            {
+                LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "WMI query successful.`nNumber of cores found: $($processorList.NumberOfCores)"
+                foreach($processor in $processorList)
+                {
+                    $procCount = $procCount + $processor.NumberOfCores
+                }
+                break
+            }
+        }
+        if($procCount -lt 1)
+        {
+            $procCount = 1
+        }
 
-		#Set the variables for detailed analysis
-		$min = 32767
-		$max = 0
-		$sampleCount = 0
-		$totalCount = 0
-		$procTime = 0
+        #Set the variables for detailed analysis
+        $min = 32767
+        $max = 0
+        $sampleCount = 0
+        $totalCount = 0
+        $procTime = 0
 
-		#Process id of current script is $pid
+        #Process id of current script is $pid
 
-		# Get the total processor time count ProcessIterationCount number of times, to get the average
-		for($loopCounter=0; $loopCounter -lt $ProcessIterationCount; $loopCounter++)
-		{
-			$agentProcIDs = "|"
-			# Step 1: Get all SCOM Processes
-			for($counter=0; $counter -lt $retryAttempts; $counter++)
-			{
-				if($isHigherThanWin08 -eq $true)
-				{
-					try
-					{
-						LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get ProcessId, ParentProcessId data"
-						# Use COM 
-						$processes = Get-CimInstance -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction Stop
+        # Get the total processor time count ProcessIterationCount number of times, to get the average
+        for($loopCounter=0; $loopCounter -lt $ProcessIterationCount; $loopCounter++)
+        {
+            $agentProcIDs = "|"
+            # Step 1: Get all SCOM Processes
+            for($counter=0; $counter -lt $retryAttempts; $counter++)
+            {
+                if($isHigherThanWin08 -eq $true)
+                {
+                    try
+                    {
+                        LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get ProcessId, ParentProcessId data"
+                        # Use COM 
+                        $processes = Get-CimInstance -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction Stop
 
-					}
-					catch 
-					{
-						LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive processes.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-					}
-				}
-				else
-				{
-					$processes = Get-WMIObject -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction stop
-				}
-				if($processes -ne $null)
-				{
-					LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Number of active processes found: $($processes.Count).`nStarting search for the ones related to HealthService"
-					# Step 2: Get the Health Service and Monitoring Host objects
-					foreach($process in $processes)
-					{
-						if(($process -ne $null) -and ($process.GetType().Name -ne "Nothing"))
-						{
-							if(($process.Name.contains("HealthService") -Or $process.Name.contains("MonitoringHost")) -And (-Not($agentProcIDs.contains($("|" + $process.ProcessId + "|")))))
-							{
-								$agentProcIDs = $($agentProcIDs + $process.ProcessId + "|")
-							}
-						}
-					}
+                    }
+                    catch 
+                    {
+                        LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive processes.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+                    }
+                }
+                else
+                {
+                    $processes = Get-WMIObject -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction stop
+                }
+                if($processes -ne $null)
+                {
+                    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Number of active processes found: $($processes.Count).`nStarting search for the ones related to HealthService"
+                    # Step 2: Get the Health Service and Monitoring Host objects
+                    foreach($process in $processes)
+                    {
+                        if(($process -ne $null) -and ($process.GetType().Name -ne "Nothing"))
+                        {
+                            if(($process.Name.contains("HealthService") -Or $process.Name.contains("MonitoringHost")) -And (-Not($agentProcIDs.contains($("|" + $process.ProcessId + "|")))))
+                            {
+                                $agentProcIDs = $($agentProcIDs + $process.ProcessId + "|")
+                            }
+                        }
+                    }
 
-					# Step 3: Get all the child processes
-					$childFound = $true
-					# While a new child is found, re-iterate the list to find its child
-					Do
-					{
-						$childFound = $false
-						foreach($process in $processes)
-						{
-							if(($process -ne $null) -and ($process.GetType().Name -ne "Nothing"))
-							{
-								# If parent process is in the agentProcIDs list but the process itself is not, its a new child
+                    # Step 3: Get all the child processes
+                    $childFound = $true
+                    # While a new child is found, re-iterate the list to find its child
+                    Do
+                    {
+                        $childFound = $false
+                        foreach($process in $processes)
+                        {
+                            if(($process -ne $null) -and ($process.GetType().Name -ne "Nothing"))
+                            {
+                                # If parent process is in the agentProcIDs list but the process itself is not, its a new child
 
-								# Filter out myself
-								if($process.ProcessId -ne $pid)
-								{
-									if($agentProcIDs.contains($("|" + $process.ParentProcessId + "|")) -And (-Not($agentProcIDs.contains($("|" + $process.ProcessId + "|")))))
-									{
-										$agentProcIDs = $($agentProcIDs + $process.ProcessId + "|")
-										$childFound = $true
-									}
-								}
-							}
-						}
-					}
-					While($childFound -eq $true)
+                                # Filter out myself
+                                if($process.ProcessId -ne $pid)
+                                {
+                                    if($agentProcIDs.contains($("|" + $process.ParentProcessId + "|")) -And (-Not($agentProcIDs.contains($("|" + $process.ProcessId + "|")))))
+                                    {
+                                        $agentProcIDs = $($agentProcIDs + $process.ProcessId + "|")
+                                        $childFound = $true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    While($childFound -eq $true)
 
-					# Step 4: Get the total cpu percentage used for all the SCOM processes
-					if($isHigherThanWin08 -eq $true)
-					{
-						try
-						{
-							LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get performance counter data"
-							# Use COM 
-							$wmiService = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction Stop
-						}
-						catch
-						{
-							LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive performance counters.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-						}
-					}
-					else
-					{
-						$wmiService =  Get-WMIObject -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process"
-					}
-					$totalPercentProcessorTime = 0
+                    # Step 4: Get the total cpu percentage used for all the SCOM processes
+                    if($isHigherThanWin08 -eq $true)
+                    {
+                        try
+                        {
+                            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get performance counter data"
+                            # Use COM 
+                            $wmiService = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction Stop
+                        }
+                        catch
+                        {
+                            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive performance counters.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+                        }
+                    }
+                    else
+                    {
+                        $wmiService =  Get-WMIObject -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process"
+                    }
+                    $totalPercentProcessorTime = 0
 
 
-					# Iterate each process to add the percent processor time to the to
-					foreach($process in $wmiService)
-					{
-						if($agentProcIDs.Contains($("|" + $process.IDProcess + "|")))
-						{
-							$x = $(GetProcessorTime $process.IDProcess $ComputerName)
-							$totalPercentProcessorTime = $totalPercentProcessorTime + $x
-							if($ConfigForRun -eq $true)
-							{
-								$procTime = $(GetProcessorTime $process.IDProcess $ComputerName)
-								$sampleCount = $sampleCount + 1
-								$procTime = [double]$procTime
-								$totalCount = $totalCount + $procTime
+                    # Iterate each process to add the percent processor time to the to
+                    foreach($process in $wmiService)
+                    {
+                        if($agentProcIDs.Contains($("|" + $process.IDProcess + "|")))
+                        {
+                            $x = $(GetProcessorTime $process.IDProcess $ComputerName)
+                            $totalPercentProcessorTime = $totalPercentProcessorTime + $x
+                            if($ConfigForRun -eq $true)
+                            {
+                                $procTime = $(GetProcessorTime $process.IDProcess $ComputerName)
+                                $sampleCount = $sampleCount + 1
+                                $procTime = [double]$procTime
+                                $totalCount = $totalCount + $procTime
 
-								# Check for min value
-								if($procTime -lt $min)
-								{
-									$min = $procTime
-								}
-								# Check for max value
-								if($procTime -gt $max)
-								{
-									$max = $procTime
-								}
-							}
-						}
-					}
+                                # Check for min value
+                                if($procTime -lt $min)
+                                {
+                                    $min = $procTime
+                                }
+                                # Check for max value
+                                if($procTime -gt $max)
+                                {
+                                    $max = $procTime
+                                }
+                            }
+                        }
+                    }
 
-					# Add the total percentage time to the final percentage time for averaging in the end
-					$finalPercentProcessorTime = $finalPercentProcessorTime + $totalPercentProcessorTime
-					$dataCount = $dataCount + 1
-					break
-				}
-			}
+                    # Add the total percentage time to the final percentage time for averaging in the end
+                    $finalPercentProcessorTime = $finalPercentProcessorTime + $totalPercentProcessorTime
+                    $dataCount = $dataCount + 1
+                    break
+                }
+            }
 
-			# Delaying each iteration by 3 seconds
-			Start-Sleep 3
-		}
-		# Add the detailed analysis to the property bag
-		if($ConfigForRun -eq $true)
-		{
-			$oPropertyBag.AddValue("SamplesTaken", $ProcessIterationCount)
-			$oPropertyBag.AddValue("Average", [double]($totalCount/$sampleCount))
-			$oPropertyBag.AddValue("Maximum", $max)
-			$oPropertyBag.AddValue("Minimum", $min)
-		}
-		# Calculate the final percentage processor time for all the SCOM processes
-		if($dataCount -lt 1)
-		{
-			$dataCount = 1
-		}
-		$finalPercentProcessorTime = ($finalPercentProcessorTime/$dataCount)/$procCount
-	}
+            # Delaying each iteration by 3 seconds
+            Start-Sleep 3
+        }
+        # Add the detailed analysis to the property bag
+        if($ConfigForRun -eq $true)
+        {
+            $oPropertyBag.AddValue("SamplesTaken", $ProcessIterationCount)
+            $oPropertyBag.AddValue("Average", [double]($totalCount/$sampleCount))
+            $oPropertyBag.AddValue("Maximum", $max)
+            $oPropertyBag.AddValue("Minimum", $min)
+        }
+        # Calculate the final percentage processor time for all the SCOM processes
+        if($dataCount -lt 1)
+        {
+            $dataCount = 1
+        }
+        $finalPercentProcessorTime = ($finalPercentProcessorTime/$dataCount)/$procCount
+    }
 
-	if($ConfigForRun -eq $false)
-	{
-		$oPropertyBag.AddValue("SCOMpercentageCPUTime", $finalPercentProcessorTime)
-	}
+    if($ConfigForRun -eq $false)
+    {
+        $oPropertyBag.AddValue("SCOMpercentageCPUTime", $finalPercentProcessorTime)
+    }
 }
 Catch 
 {
-	LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Error running script.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-	LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG   `
-	-LogMessage "Debug:`n$($_.InvocationInfo.MyCommand.Name)`n$($_.ErrorDetails.Message)`n$($_.InvocationInfo.PositionMessage)`n$($_.CategoryInfo.ToString())`n$($_.FullyQualifiedErrorId)"
+    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Error running script.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG   `
+    -LogMessage "Debug:`n$($_.InvocationInfo.MyCommand.Name)`n$($_.ErrorDetails.Message)`n$($_.InvocationInfo.PositionMessage)`n$($_.CategoryInfo.ToString())`n$($_.FullyQualifiedErrorId)"
 }
 Finally
 {
-	if($LogLevelText -eq "CommandLine") 
-	{
-		$oAPI.Return($oPropertyBag)
-	}
-	else 
-	{
-		$oPropertyBag
-	}
+    if($LogLevelText -eq "CommandLine") 
+    {
+        $oAPI.Return($oPropertyBag)
+    }
+    else 
+    {
+        $oPropertyBag
+    }
 
     $Time.Stop()
-	LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Script Finished.`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
+    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Script Finished.`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
 }
