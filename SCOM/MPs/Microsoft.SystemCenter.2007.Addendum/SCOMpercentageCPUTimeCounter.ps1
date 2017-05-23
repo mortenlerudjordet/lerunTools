@@ -173,16 +173,18 @@ $Dd = 0
 	}
 
     $Nd = $N2-$N1
+    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Difference for precent processor time: $Nd"
     $Dd = $D2-$D1
+    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Difference for timestamp: $Dd"
     # stop divide by zero
-    if($Dd -gt 0)
-    {
-        $PercentProcessorTime = $($($Nd/$Dd) * 100)
-    }
-    else
+    if($Dd -eq 0)
     {
         # Set to zero so not to get unhandled exception
         $PercentProcessorTime = 0
+    }
+    else
+    {
+        $PercentProcessorTime = $($($Nd/$Dd) * 100)
     }
     return $PercentProcessorTime
 

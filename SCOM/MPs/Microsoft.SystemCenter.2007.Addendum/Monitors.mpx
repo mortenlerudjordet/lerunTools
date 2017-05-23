@@ -44,7 +44,7 @@
         </OperationalStates>
         <Configuration>
           <IntervalSeconds>300</IntervalSeconds>
-          <TimeoutSeconds>300</TimeoutSeconds>
+          <TimeoutSeconds>120</TimeoutSeconds>
           <SpreadTimeSeconds>300</SpreadTimeSeconds>
           <ComputerName>$Target/Host/Property[Type="Windows!Microsoft.Windows.Computer"]/PrincipalName$</ComputerName>
           <Threshold>25</Threshold>
