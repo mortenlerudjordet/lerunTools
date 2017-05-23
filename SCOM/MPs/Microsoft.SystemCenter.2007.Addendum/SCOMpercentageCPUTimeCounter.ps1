@@ -73,7 +73,11 @@ if($EventType -le $LogLevel)
 		5 {
 			# Debug
 			$oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
-		}		
+		}
+	    Default {
+			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+		}	
+	
 	}
 }
 }

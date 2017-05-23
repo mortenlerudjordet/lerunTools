@@ -8,7 +8,7 @@
 # $File:        WMIFunctionalCheck.ps1 $
 #*************************************************************************
 Param(
-	[String]$LogLevelText = "Debug"
+	[String]$LogLevelText = "CommandLine"
 )
 
 #==================================================================================
@@ -44,6 +44,13 @@ if($EventType -le $LogLevel)
 		5 {
 			# Debug
 			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
+		}
+		6 {
+			# Run from command line
+			Write-Verbose -Message $LogMessage
+		}
+	    Default {
+			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
 		}		
 	}
 }
@@ -77,6 +84,10 @@ Switch($LogLevelText)
 	'Debug' {
         $LogLevel = 5
     }
+	'CommandLine' {
+		$VerbosePreference="Continue"
+		$LogLevel = 6
+	}
     Default {
         $LogLevel = 1
     }
@@ -137,7 +148,7 @@ finally
 		LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage $Message
     }
     
-	if($LogLevelText -eq "Debug") 
+	if($LogLevelText -eq "CommandLine") 
 	{
 		$SCOMapi.Return($propertyBag)
 	}
