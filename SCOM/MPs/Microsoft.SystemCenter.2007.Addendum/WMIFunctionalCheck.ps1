@@ -46,11 +46,8 @@ if($EventType -le $LogLevel)
 			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
 		}
 		6 {
-			# Run from command line
+			# Run from command line and log to screen
 			Write-Verbose -Message $LogMessage
-		}
-	    Default {
-			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
 		}		
 	}
 }
