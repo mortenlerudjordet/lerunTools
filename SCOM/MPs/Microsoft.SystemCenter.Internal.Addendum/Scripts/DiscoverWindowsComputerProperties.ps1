@@ -134,7 +134,7 @@ function ForestFromDomainDNS($strDNSDomain)
 #-----------------------------------------------------------
 # Returns the NetBIOS domain name from the DNS domain name
 #-----------------------------------------------------------
-function NetBIOSDomainFromDN($strNetBIOSComputerName)
+function NetBIOSDomainFromDN
 {
     if($Is_OS_More_Than_2012)
 	{
@@ -176,6 +176,7 @@ function GetIPAddresses($strNetBIOSComputerName)
     {
       $arrItems = Get-WmiObject -Class Win32_NetworkAdapterConfiguration
     }
+    # Need logic to filter out non active NICs
     foreach($arrItem in $arrItems)
     {
         $IPValue = $arrItem.IPAddress
@@ -325,7 +326,8 @@ try
 	}
 	try
 	{
-		$reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $strDNSComputerName)
+		# Will only discover if VM is running on Hyper-V
+        $reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $strDNSComputerName)
 		$regKey = $reg.OpenSubKey("SOFTWARE\\Microsoft\\Virtual Machine\\Guest\\Parameters")
 		$strVirtualMachineName = $regKey.GetValue("VirtualMachineName")
 	}
@@ -398,7 +400,7 @@ try
     
 		if ($strDomainDN -ne $null)
 		{
-		  $strNetBIOSDomain = NetBIOSDomainFromDN $strNetBIOSComputerName
+		  $strNetBIOSDomain = NetBIOSDomainFromDN
 		}
     
 		$strIPAddresses = GetIPAddresses $strNetBIOSComputerName
