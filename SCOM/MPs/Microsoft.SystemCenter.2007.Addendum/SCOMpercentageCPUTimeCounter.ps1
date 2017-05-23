@@ -2,7 +2,7 @@
 	[string]$ComputerName,
 	[string]$ConfigForRun,
 	[int]$ProcessIterationCount,
-	[String]$LogLevelText
+	[String]$LogLevelText = "CommandLine"
 )
 #Process Arguments:
 # 0 - ComputerIdentity
@@ -59,21 +59,57 @@ if($EventType -le $LogLevel)
 	Switch($EventType)
 	{
 		1 {
-			# Error
-			$oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
+			if($LogLevelText -eq "CommandLine") 
+            {
+			    # Run from command line and log to screen
+			    Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Error
+			    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
+            }
+
 		}
 		2 {
-			# Warning
-			$oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
+			if($LogLevelText -eq "CommandLine") 
+            {
+			    # Run from command line and log to screen
+			    Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Warning
+			    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
+            }
+
 		}
 		4 {
-			# Information
-			$oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
+			if($LogLevelText -eq "CommandLine") 
+            {
+			    # Run from command line and log to screen
+			    Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Information
+			    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+            }
+	
 		}
 		5 {
-			# Debug
-			$oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
-		}
+			if($LogLevelText -eq "CommandLine") 
+            {
+			    # Run from command line and log to screen
+			    Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Debug
+			    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+            }
+	
+		}	
 	}
 }
 }
@@ -88,7 +124,7 @@ $N2 = 0
 $D2 = 0
 $Nd = 0
 $Dd = 0
-$PercentProcessorTime   = 0
+    $PercentProcessorTime   = 0
     $query = "Select * from Win32_PerfRawData_PerfProc_Process where IDProcess = ""$procId"""
     if($isHigherThanWin08 -eq $true)
     {
@@ -107,25 +143,25 @@ $PercentProcessorTime   = 0
         $objService1 = Get-WMIObject -Namespace "root\cimv2" -Query $query
     }
     ForEach($objInstance1 in $objService1)
-{
+    {
         $N1 = $objInstance1.PercentProcessorTime
         $D1 = $objInstance1.TimeStamp_Sys100NS
- }
+    }
 
-  Start-Sleep 1
+   Start-Sleep 1
    if($isHigherThanWin08 -eq $true)
-    {
-        Try
-		{
-			LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI 2nd round of raw performance data"
-			# Use COM instead if all WinRM connection attempts fail
-			$objService2 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
-		}
-		Catch
-		{
-			# Log unhandeled execption
-			LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive second round of performance data.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-		}
+   {
+        try
+	    {
+		    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI 2nd round of raw performance data"
+		    # Use COM instead if all WinRM connection attempts fail
+		    $objService2 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+	    }
+	    catch
+	    {
+		    # Log unhandeled execption
+		    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive second round of performance data.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+	    }
     }
 	else{
         $objService2 = Get-WMIObject -Namespace "root\cimv2" -Query $query
@@ -171,6 +207,10 @@ Switch($LogLevelText)
 	'Debug' {
         $LogLevel = 5
     }
+	'CommandLine' {
+		$VerbosePreference="Continue"
+		$LogLevel = 6
+	}
     Default {
         $LogLevel = 1
     }
@@ -416,7 +456,6 @@ Try
 	{
 		$oPropertyBag.AddValue("SCOMpercentageCPUTime", $finalPercentProcessorTime)
 	}
-	$oPropertyBag
 }
 Catch 
 {
@@ -426,6 +465,15 @@ Catch
 }
 Finally
 {
-	$Time.Stop()
+	if($LogLevelText -eq "CommandLine") 
+	{
+		$oAPI.Return($oPropertyBag)
+	}
+	else 
+	{
+		$oPropertyBag
+	}
+
+    $Time.Stop()
 	LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Script Finished.`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
 }

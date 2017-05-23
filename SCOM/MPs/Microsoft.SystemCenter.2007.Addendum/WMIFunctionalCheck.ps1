@@ -1,4 +1,5 @@
 ﻿#Copyright (c) Microsoft Corporation. All rights reserved.
+#
 #*************************************************************************
 # $ScriptName:  "WMIFunctionalCheck" $
 #
@@ -29,25 +30,57 @@ if($EventType -le $LogLevel)
 	Switch($EventType)
 	{
 		1 {
-			# Error
-			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
+			if($LogLevelText -eq "CommandLine") 
+            {
+			    # Run from command line and log to screen
+			    Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Error
+			    $SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
+            }
+
 		}
 		2 {
-			# Warning
-			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
+			if($LogLevelText -eq "CommandLine") 
+            {
+			    # Run from command line and log to screen
+			    Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Warning
+			    $SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
+            }
+
 		}
 		4 {
-			# Information
-			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
+			if($LogLevelText -eq "CommandLine") 
+            {
+			    # Run from command line and log to screen
+			    Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Information
+			    $SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+            }
+	
 		}
 		5 {
-			# Debug
-			$SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
-		}
-		6 {
-			# Run from command line and log to screen
-			Write-Verbose -Message $LogMessage
-		}		
+			if($LogLevelText -eq "CommandLine") 
+            {
+			    # Run from command line and log to screen
+			    Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Debug
+			    $SCOMapi.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+            }
+	
+		}	
 	}
 }
 }
@@ -82,7 +115,7 @@ Switch($LogLevelText)
     }
 	'CommandLine' {
 		$VerbosePreference="Continue"
-		$LogLevel = 6
+        $LogLevel = 6
 	}
     Default {
         $LogLevel = 1
