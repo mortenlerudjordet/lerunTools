@@ -138,8 +138,17 @@ $PercentProcessorTime   = 0
 
     $Nd = $N2-$N1
     $Dd = $D2-$D1
-    $PercentProcessorTime = $($($Nd/$Dd) * 100)
-   return $PercentProcessorTime
+    # stop divide by zero
+    if($Dd -gt 0)
+    {
+        $PercentProcessorTime = $($($Nd/$Dd) * 100)
+    }
+    else
+    {
+        # Set to zero so not to get unhandled exception
+        $PercentProcessorTime = 0
+    }
+    return $PercentProcessorTime
 
 }
 

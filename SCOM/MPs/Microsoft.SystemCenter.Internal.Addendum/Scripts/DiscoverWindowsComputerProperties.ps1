@@ -348,7 +348,7 @@ try
 
 		try
 		{	
-			$query = "Select Domain, Name, NumberOfLogicalProcessors, NumberOfProcessors from Win32_ComputerSystem WHERE Name = ""$strNetBIOSComputerName"""
+			$query = "Select Domain, Name, NumberOfLogicalProcessors, NumberOfProcessors from Win32_ComputerSystem"
 			if($Is_OS_More_Than_2012)
 			{   
 				try
@@ -362,7 +362,7 @@ try
 				}
 				catch
 				{
-					LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing OS data from WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+					LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing logical processors data from WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
 				}
 			}
 			else
@@ -382,39 +382,7 @@ try
 		}
 		catch
 		{
-			$e = $_.Exception.Message
-			$message = $_.Exception.Message
-			LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage $message
-			if ($e -ne $E_CLUSTER_RESOURCE_NOT_FOUND)
-			{
-				throw $e;
-			}
-			$query = "Select Domain, Name, NumberOfLogicalProcessors, NumberOfProcessors from Win32_ComputerSystem"
-			if($Is_OS_More_Than_2012)
-			{
-				try
-				{
-					$colSettings = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
-				}
-				catch
-				{
-					LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing logical processors.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-				}
-			}
-			else
-			{
-			  $colSettings = Get-WmiObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop
-			}
-			$objComputer = $colSettings.item()
-			$strDomainDNsName = $objComputer.Domain
-			$strNetBIOSHostName = $objComputer.Name
-			$strLogicalProcessors = $objComputer.NumberOfLogicalProcessors
-			$strPhysicalProcessors = $objComputer.NumberOfProcessors
-			if ($null -eq $strLogicalProcessors)
-			{
-			  $strLogicalProcessors = $objComputer.NumberOfProcessors
-			  $strPhysicalProcessors = $null
-			}
+			LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing logical processors data from WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
 		}
     
 		try
