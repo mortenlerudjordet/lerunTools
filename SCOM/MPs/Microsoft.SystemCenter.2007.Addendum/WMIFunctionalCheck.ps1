@@ -1,5 +1,4 @@
 ﻿#Copyright (c) Microsoft Corporation. All rights reserved.
-# Addendum by: Morten Lerudjordet
 #*************************************************************************
 # $ScriptName:  "WMIFunctionalCheck" $
 #
