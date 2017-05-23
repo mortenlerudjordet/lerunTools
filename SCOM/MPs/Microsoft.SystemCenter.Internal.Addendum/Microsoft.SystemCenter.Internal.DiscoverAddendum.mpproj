@@ -3,9 +3,9 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ProjectGuid>{3cc39c79-a6e8-4b60-b46b-4f3a32521c42}</ProjectGuid>
-    <RootNamespace>Microsoft.SystemCenter.Internal.Addendum</RootNamespace>
-    <Name>Microsoft SystemCenter Interna Addendum</Name>
-    <ManagementPackName>Microsoft.SystemCenter.Internal.Addendum</ManagementPackName>
+    <RootNamespace>Microsoft.SystemCenter.Internal.DiscoverAddendum</RootNamespace>
+    <Name>Microsoft SystemCenter Internal Discover Addendum</Name>
+    <ManagementPackName>Microsoft.SystemCenter.Internal.DiscoverAddendum</ManagementPackName>
     <Version>1.0.1.0</Version>
     <MpFrameworkVersion>v7.0.2</MpFrameworkVersion>
     <MpFrameworkProfile>OM</MpFrameworkProfile>
@@ -54,7 +54,7 @@
     </ManagementPackReference>
     <ManagementPackReference Include="Microsoft.SystemCenter.Visualization.Library">
       <Alias>Visualization</Alias>
-      <PackageToBundle>false</PackageToBundle>
+      <PackageToBundle>False</PackageToBundle>
     </ManagementPackReference>
   </ItemGroup>
   <ItemGroup>
@@ -66,9 +66,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Discoveries.mpx">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="LanguagePacks.mpx">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Overrides.mpx">

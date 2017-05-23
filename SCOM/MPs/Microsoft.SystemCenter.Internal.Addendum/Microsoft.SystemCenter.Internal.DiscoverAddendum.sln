@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{D4B43EB3-688B-4EEE-86BD-088F0B28ABB3}") = "Microsoft.SystemCenter.Internal.Addendum", "Microsoft.SystemCenter.Internal.Addendum.mpproj", "{3CC39C79-A6E8-4B60-B46B-4F3A32521C42}"
+Project("{D4B43EB3-688B-4EEE-86BD-088F0B28ABB3}") = "Microsoft.SystemCenter.Internal.DiscoverAddendum", "Microsoft.SystemCenter.Internal.DiscoverAddendum.mpproj", "{3CC39C79-A6E8-4B60-B46B-4F3A32521C42}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

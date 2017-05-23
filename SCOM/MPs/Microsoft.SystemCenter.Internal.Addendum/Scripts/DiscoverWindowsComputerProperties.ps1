@@ -140,22 +140,16 @@ function NetBIOSDomainFromDN($strNetBIOSComputerName)
 	{
 		try
 		{
-			$DnsObject = Get-CimInstance -Classname Win32_ComputerSystem -ComputerName $strNetBIOSComputerName -ErrorAction SilentlyContinue -ErrorVariable wmiError
-			if($wmiError)
-			{
-				$DnsObject = Get-CimInstance -Classname Win32_ComputerSystem -ErrorAction Stop
-				$wmiError = $Null
-			}
+			$DnsObject = Get-CimInstance -Classname Win32_ComputerSystem -ErrorAction Stop
 		}
 		catch
 		{
 			LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieving OS info.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
 		}
-		
     }
 	else
 	{
-      $DnsObject = Get-WmiObject -Class Win32_ComputerSystem -ComputerName $strNetBIOSComputerName
+      $DnsObject = Get-WmiObject -Class Win32_ComputerSystem
     }
     return $DnsObject.Domain
 }
@@ -171,12 +165,7 @@ function GetIPAddresses($strNetBIOSComputerName)
 	{
 		try
 		{
-			$arrItems = Get-CimInstance -Classname Win32_NetworkAdapterConfiguration -ComputerName $strNetBIOSComputerName -ErrorAction SilentlyContinue -ErrorVariable wmiError
-			if($wmiError)
-			{
-				$arrItems = Get-CimInstance -Classname Win32_NetworkAdapterConfiguration -ErrorAction Stop
-				$wmiError = $Null
-			}
+			$arrItems = Get-CimInstance -Classname Win32_NetworkAdapterConfiguration -ErrorAction Stop
 		}
 		catch
 		{
@@ -185,7 +174,7 @@ function GetIPAddresses($strNetBIOSComputerName)
     }
 	else
     {
-      $arrItems = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -ComputerName $strNetBIOSComputerName
+      $arrItems = Get-WmiObject -Class Win32_NetworkAdapterConfiguration
     }
     foreach($arrItem in $arrItems)
     {
@@ -321,7 +310,7 @@ try
 	# Need to retrieve these properties
 	$oAPI = new-object -comobject "MOM.ScriptAPI"
 
-	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Time started: $((Get-Date).ToString("HH:mm:ss"))"
+	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Starting script. Running as: $(whoami)"
 	$oDiscovery = $oAPI.CreateDiscoveryData($SourceType, $SourceId, $ManagedEntityId);
 	# Get the virtual machine information
 	try
@@ -369,12 +358,7 @@ try
 						# Stop if one cannot use Get-CimInstance CMDlet
 						Import-Module -Name cimcmdlets -ErrorAction Stop
 					}					
-					$objComputer = Get-CimInstance -Namespace "root\cimv2" -Query $query -ComputerName $strNetBIOSComputerName -ErrorAction SilentlyContinue -ErrorVariable wmiError
-					if($wmiError)
-					{
-						$objComputer = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
-						$wmiError = $Null
-					}
+					$objComputer = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
 				}
 				catch
 				{
@@ -383,7 +367,7 @@ try
 			}
 			else
 			{
-				$objComputer = Get-WmiObject -Namespace "root\cimv2" -Query $query -ComputerName $strNetBIOSComputerName -ErrorAction Stop
+				$objComputer = Get-WmiObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop
 			}
         
 			$strDomainDNsName = $objComputer.Domain
@@ -408,14 +392,9 @@ try
 			$query = "Select Domain, Name, NumberOfLogicalProcessors, NumberOfProcessors from Win32_ComputerSystem"
 			if($Is_OS_More_Than_2012)
 			{
-				 try
-				 {
-				  $colSettings = Get-CimInstance -Namespace "root\cimv2" -Query $query -ComputerName $strNetBIOSComputerName -ErrorAction SilentlyContinue -ErrorVariable wmiError
-				  if($wmiError)
-				  {
+				try
+				{
 					$colSettings = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
-					$wmiError = $Null
-				  }
 				}
 				catch
 				{
@@ -424,7 +403,7 @@ try
 			}
 			else
 			{
-			  $colSettings = Get-WmiObject -Namespace "root\cimv2" -Query $query -ComputerName $strNetBIOSComputerName -ErrorAction Stop
+			  $colSettings = Get-WmiObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop
 			}
 			$objComputer = $colSettings.item()
 			$strDomainDNsName = $objComputer.Domain
@@ -559,5 +538,5 @@ Catch
 Finally 
 {
 	$Time.Stop()
-	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script Finished`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
+	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script has completed.`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
 }

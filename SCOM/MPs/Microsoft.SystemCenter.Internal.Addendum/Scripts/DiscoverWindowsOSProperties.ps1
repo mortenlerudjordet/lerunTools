@@ -100,6 +100,8 @@ Switch($LogLevelText)
 try 
 {
 	$api = new-object -comObject "MOM.ScriptAPI"
+	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Starting script. Running as: $(whoami)"
+
 	$properties = "Version","Caption","BuildNumber","CSDVersion","ServicePackMajorVersion","ServicePackMinorVersion","SerialNumber","InstallDate","WindowsDirectory","TotalVisibleMemorySize"
 	$isHigherThanWin08 = CheckByOSCurrentVersion
 	if($isHigherThanWin08 -eq $true)
@@ -111,12 +113,7 @@ try
 			# Stop if one cannot use Get-CimInstance CMDlet
 			Import-Module -Name cimcmdlets -ErrorAction Stop
 		}
-		$items = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ComputerName $NetworkName -ErrorAction SilentlyContinue -ErrorVariable wmiError
-		if($wmiError)
-		{
-			$items = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ErrorAction Stop
-			$wmiError = $Null
-		}
+		$items = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ErrorAction Stop
 	  }
 	  catch
 	  {
@@ -125,7 +122,7 @@ try
 	}
 	else
 	{
-	  $items = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ComputerName $NetworkName
+	  $items = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties
 	}
 
 	if($items -ne $null)
