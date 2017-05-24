@@ -158,7 +158,7 @@ function NetBIOSDomainFromDN
 #-------------------------------------------------------------
 # Gets the IP addresses for the given computer name
 #-------------------------------------------------------------
-function GetIPAddresses($strNetBIOSComputerName)
+function GetIPAddresses
 {
     $strIPs =""
     # get connected network adapters
@@ -219,7 +219,7 @@ function GetIPAddresses($strNetBIOSComputerName)
         }
         catch
         {
-            LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieving NIC config.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+            LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieving NIC config for adapter: $($Adapter.Name).`nError details: $($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
         }
     } 
     if(($strIPs -ne "") -and ($strIPs -ne $null))
@@ -403,22 +403,34 @@ try
           $strNetBIOSDomain = NetBIOSDomainFromDN
         }
     
-        $strIPAddresses = GetIPAddresses $strNetBIOSComputerName
+        $strIPAddresses = GetIPAddresses
 
         $ADSISearcher = New-Object System.DirectoryServices.DirectorySearcher
         $ADSISearcher.Filter = '(&(dnshostname=' + $strDNSComputerName + ')(name=' + $strNetBIOSComputerName + ')(objectClass=computer))'
         $ADSISearcher.SearchScope = 'Subtree'
         $Computer = $ADSISearcher.FindOne()
-        $strComputerOU = $($Computer.Properties.Item('distinguishedName')).Substring($($Computer.Properties.Item('distinguishedName')).IndexOf('OU='))
+        if($Computer)
+        {
+            
+            if($Computer.Properties.Item('distinguishedName') -notlike "*OU=*") 
+            {
+                $strComputerOU = $($Computer.Properties.Item('distinguishedName')).Substring($($Computer.Properties.Item('distinguishedName')).LastIndexOf('CN='))
+            }
+            else
+            {
+                $strComputerOU = $($Computer.Properties.Item('distinguishedName')).Substring($($Computer.Properties.Item('distinguishedName')).IndexOf('OU='))
+            }
+            
+        }
+        else 
+        {
+            LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Failed to retrieve computer object from active directory."
+        }
     }
 
-    # Unable to contact the machine, (mis)use the DNS name
     catch
     {
-      $e = $_.Exception.Message
-      $message = "Exception retrieving properties '" + $e + "', using failsafe method" # Do nothing
-      LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage $message
-      Write-Verbose -Message $message
+      LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Exception retrieving properties.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
     }
 
     if((IsNullOrEmpty $strNetBIOSComputerName) -or (IsNullOrEmpty $strNetBIOSDomain))
