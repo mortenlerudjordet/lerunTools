@@ -1,29 +1,14 @@
 ﻿Param($SourceType, $SourceId, $ManagedEntityId, $ComputerIdentity, $NetworkName)
 
+# For testing discovery manually in PowerShell console (not ISE):
+# $SourceType = 0
+# $SourceId = '{00000000-0000-0000-0000-000000000000}'    
+# $ManagedEntityId = '{00000000-0000-0000-0000-000000000000}'
+# $ComputerIdentity = 'servername.domainname.domain'
+# $NetworkName = 'servername'
 
-#OS version for Win 2012
-$WIN_OS_2012_Ver = "6.2"
-$OSRegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\"
 # Hardcoded
-$LogLevelText = "Information"
-
-#******************************************************************************
-#   FUNCTION:       CheckMinOSVer
-#   DESCRIPTION:    Returns True if the Registry Key for CurrentVersion
-#                   is equal or Higher than the Minimum OS Versions Number.
-#   PARAMETER:      DblMinVer Minimum Version Number to use
-#   RETURNS:        Boolean: True, if build is greater or equal than the given number
-#******************************************************************************
-function CheckByOSCurrentVersion() #As Boolean
-{ 
-    $strCurrentOSVer = Get-ItemProperty $OSRegistryKey
-    $strCurrentOSVer = $strCurrentOSVer.CurrentVersion
-    if($strCurrentOSVer -ge $WIN_OS_2012_Ver)
-	{	
-		return $true;
-	}
-    return $false;
-}
+$LogLevelText = "CommandLine"
 
 #==================================================================================
 # Func:		LogEvent
@@ -33,33 +18,73 @@ function CheckByOSCurrentVersion() #As Boolean
 function LogEvent
 {
 Param(
-	[Int]$EventNr,
-	[Int]$EventType,
-	[String]$LogMessage
+    [Int]$EventNr,
+    [Int]$EventType,
+    [String]$LogMessage
 )
 
-$LogMessage = "`n" + $LogMessage
+if($LogLevelText -ne "CommandLine") 
+{
+    $LogMessage = "`n" + $LogMessage
+}
+
 if($EventType -le $LogLevel)
 {
-	Switch($EventType)
-	{
-		1 {
-			# Error
-			$api.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
-		}
-		2 {
-			# Warning
-			$api.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
-		}
-		4 {
-			# Information
-			$api.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
-		}
-		5 {
-			# Debug
-			$api.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
-		}		
-	}
+    Switch($EventType)
+    {
+        1 {
+            if($LogLevelText -eq "CommandLine") 
+            {
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Error
+                $api.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
+            }
+
+        }
+        2 {
+            if($LogLevelText -eq "CommandLine") 
+            {
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Warning
+                $api.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
+            }
+
+        }
+        4 {
+            if($LogLevelText -eq "CommandLine") 
+            {
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Information
+                $api.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+            }
+    
+        }
+        5 {
+            if($LogLevelText -eq "CommandLine") 
+            {
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Debug
+                $api.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+            }
+    
+        }	
+    }
 }
 }
 
@@ -92,6 +117,10 @@ Switch($LogLevelText)
 	'Debug' {
 		$LogLevel = 5
 	}
+    'CommandLine' {
+        $VerbosePreference="Continue"
+        $LogLevel = 6
+    }
 	Default {
 		$LogLevel = 1
 	}
@@ -103,26 +132,28 @@ try
 	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Starting script. Running as: $(whoami)"
 
 	$properties = "Version","Caption","BuildNumber","CSDVersion","ServicePackMajorVersion","ServicePackMinorVersion","SerialNumber","InstallDate","WindowsDirectory","TotalVisibleMemorySize"
-	$isHigherThanWin08 = CheckByOSCurrentVersion
-	if($isHigherThanWin08 -eq $true)
-	{
-	  try{
-		# Check if CIM methods are loaded
-		if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) )
-		{
-			# Stop if one cannot use Get-CimInstance CMDlet
-			Import-Module -Name cimcmdlets -ErrorAction Stop
-		}
-		$items = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ErrorAction Stop
-	  }
-	  catch
-	  {
-			LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing OS information.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-	  }
+	try
+    {
+	    $items = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ErrorAction Stop
 	}
-	else
+	catch
 	{
-	  $items = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties
+	    try
+        {
+            Import-Module -Name cimcmdlets -ErrorAction Stop	
+            $items = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ErrorAction Stop
+        }
+        catch
+        {
+            try
+            {
+                items = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ErrorAction Stop
+            }
+            catch
+            {
+                LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing OS information.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+            }
+        }        
 	}
 
 	if($items -ne $null)
@@ -222,19 +253,23 @@ try
 				}
 			}
 		}
-
 		$discoveryData.AddInstance($windowsOS)
-		$discoveryData
 	}
 }
 Catch 
 {
 	LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error running script.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-	LogEvent -EventNr $EventId -EventType $EVENT_DEBUG  `
-	-LogMessage "Debug:`n$($_.InvocationInfo.MyCommand.Name)`n$($_.ErrorDetails.Message)`n$($_.InvocationInfo.PositionMessage)`n$($_.CategoryInfo.ToString())`n$($_.FullyQualifiedErrorId)"
 }
 Finally 
 {
-	$Time.Stop()
+	if($LogLevelText -eq "CommandLine") 
+    {
+        $api.Return($discoveryData)
+    }
+    else 
+    {
+        $discoveryData
+    } 
+    $Time.Stop()
 	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script Finished`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
 }
