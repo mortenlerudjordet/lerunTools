@@ -10,7 +10,7 @@ param(
     $SourceId, 
     $ManagedEntityId, 
     $ComputerIdentity, 
-    [String]$LogLevelText = "CommandLine"
+    [String]$LogLevelText = "Information"
 )
 
     # For testing discovery manually in PowerShell console (not ISE):
@@ -18,6 +18,7 @@ param(
     # $SourceId = '{00000000-0000-0000-0000-000000000000}'    
     # $ManagedEntityId = '{00000000-0000-0000-0000-000000000000}'
     # $ComputerIdentity = 'servername.domainname.domain'
+    # Also change $LogLevelText = "CommandLine"
 
     $strDNSComputerName     = $ComputerIdentity
     $strNetBIOSDomain       = $null 
