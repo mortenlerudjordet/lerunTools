@@ -24,7 +24,11 @@ Param(
     [String]$LogMessage
 )
 
-$LogMessage = "`n" + $LogMessage
+if($LogLevelText -ne "CommandLine") 
+{
+    $LogMessage = "`n" + $LogMessage
+}
+
 if($EventType -le $LogLevel)
 {
     Switch($EventType)

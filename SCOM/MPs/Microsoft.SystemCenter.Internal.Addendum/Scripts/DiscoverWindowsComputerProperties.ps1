@@ -13,6 +13,12 @@ param(
     [String]$LogLevelText = "CommandLine"
 )
 
+    # For testing discovery manually in PowerShell console (not ISE):
+    # $SourceType = 0
+    # $SourceId = '{00000000-0000-0000-0000-000000000000}'    
+    # $ManagedEntityId = '{00000000-0000-0000-0000-000000000000}'
+    # $ComputerIdentity = 'servername.domainname.domain'
+
     $strDNSComputerName     = $ComputerIdentity
     $strNetBIOSDomain       = $null 
     $strNetBIOSComputerName = $null
@@ -39,7 +45,11 @@ Param(
     [String]$LogMessage
 )
 
-$LogMessage = "`n" + $LogMessage
+if($LogLevelText -ne "CommandLine") 
+{
+    $LogMessage = "`n" + $LogMessage
+}
+
 if($EventType -le $LogLevel)
 {
     Switch($EventType)
@@ -157,13 +167,13 @@ function NetBIOSDomain
 
     try
     {
-        $ntDomain = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+        $ntDomain = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop | Select-Object -ExpandProperty DomainName
     }
     catch
     {
         try
         {
-            $ntDomain = Get-WmiObject "root\cimv2" -Namespace -Query $query -ErrorAction Stop   
+            $ntDomain = Get-WmiObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop  | Select-Object -ExpandProperty DomainName
         }
         catch 
         {
@@ -171,8 +181,7 @@ function NetBIOSDomain
         }
         
     }
-
-    return $ntDomain.DomainName
+    return $ntDomain
 }
 
 #-------------------------------------------------------------
