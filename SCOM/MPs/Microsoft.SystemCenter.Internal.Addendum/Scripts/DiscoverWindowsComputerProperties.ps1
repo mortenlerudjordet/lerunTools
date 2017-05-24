@@ -5,8 +5,13 @@
 #  DNS name of the computer.
 #  Fixes added by Morten Lerudjordet
 #-------------------------------------------------------------------------------
-
-param($SourceType, $SourceId, $ManagedEntityId, $ComputerIdentity, [String]$LogLevelText)
+param(
+    $SourceType, 
+    $SourceId, 
+    $ManagedEntityId, 
+    $ComputerIdentity, 
+    [String]$LogLevelText = "CommandLine"
+)
 
     $strDNSComputerName     = $ComputerIdentity
     $strNetBIOSDomain       = $null 
@@ -44,21 +49,57 @@ if($EventType -le $LogLevel)
     Switch($EventType)
     {
         1 {
-            # Error
-            $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
+            if($LogLevelText -eq "CommandLine") 
+            {
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Error
+                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
+            }
+
         }
         2 {
-            # Warning
-            $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
+            if($LogLevelText -eq "CommandLine") 
+            {
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Warning
+                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
+            }
+
         }
         4 {
-            # Information
-            $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
+            if($LogLevelText -eq "CommandLine") 
+            {
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Information
+                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+            }
+    
         }
         5 {
-            # Debug
-            $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)	
-        }		
+            if($LogLevelText -eq "CommandLine") 
+            {
+                # Run from command line and log to screen
+                Write-Verbose -Message $LogMessage
+            }
+            else
+            {
+                # Debug
+                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+            }
+    
+        }	
     }
 }
 }
@@ -83,19 +124,6 @@ function IsNullOrEmpty($str)
 {
   return (($null -eq $str) -or (0 -eq $str.length))
 }
-
-
-#-----------------------------------------------------------
-# Returns the DN domain name from DNS
-#-----------------------------------------------------------
-function DNDomainFromDNS($strDomainDNsName)
-{
-    # Determine DN domain name from RootDSE object.
-    $query = "LDAP://$strDomainDNsName/RootDSE"
-    $objRootDSE = [System.DirectoryServices.DirectoryEntry]([ADSI]$query)
-    return $objRootDSE.Get("defaultNamingContext")
-}
-
 
 #-----------------------------------------------------------
 # Returns the forest for the domain
@@ -126,34 +154,10 @@ function ForestFromDomainDNS($strDNSDomain)
     }
     catch
     {
-       LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieving domain name.`n$($_.Exception.Message)"
+       LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieving forest domain name.`n$($_.Exception.Message)"
     }
     return $strForestDNS
 }
-
-#-----------------------------------------------------------
-# Returns the NetBIOS domain name from the DNS domain name
-#-----------------------------------------------------------
-function NetBIOSDomainFromDN
-{
-    if($Is_OS_More_Than_2012)
-    {
-        try
-        {
-            $DnsObject = Get-CimInstance -Classname Win32_ComputerSystem -ErrorAction Stop
-        }
-        catch
-        {
-            LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieving OS info.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-        }
-    }
-    else
-    {
-      $DnsObject = Get-WmiObject -Class Win32_ComputerSystem
-    }
-    return $DnsObject.Domain
-}
-
 
 #-------------------------------------------------------------
 # Gets the IP addresses for the given computer name
@@ -302,6 +306,10 @@ try
         'Debug' {
             $LogLevel = 5
         }
+        'CommandLine' {
+            $VerbosePreference="Continue"
+            $LogLevel = 6
+        }
         Default {
             $LogLevel = 1
         }
@@ -330,6 +338,7 @@ try
         $reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $strDNSComputerName)
         $regKey = $reg.OpenSubKey("SOFTWARE\\Microsoft\\Virtual Machine\\Guest\\Parameters")
         $strVirtualMachineName = $regKey.GetValue("VirtualMachineName")
+
     }
     catch
     {
@@ -342,15 +351,12 @@ try
         $E_CLUSTER_RESOURCE_NOT_FOUND = -2146823281
 
         # Get the computer from the system
-        $astrSplit = ""
         $objComputer = $null
         $colSettings = $null
-        $astrSplit = $strDNSComputerName.split(".")
-        $strNetBIOSComputerName = $astrSplit[0]
 
         try
         {	
-            $query = "Select Domain, Name, NumberOfLogicalProcessors, NumberOfProcessors from Win32_ComputerSystem"
+            $query = "Select Domain, Name, NumberOfLogicalProcessors, NumberOfProcessors, PartOfDomain from Win32_ComputerSystem"
             if($Is_OS_More_Than_2012)
             {   
                 try
@@ -372,8 +378,17 @@ try
                 $objComputer = Get-WmiObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop
             }
         
-            $strDomainDNsName = $objComputer.Domain
-            $strNetBIOSHostName = $objComputer.Name
+            $strDomainDNSName = $objComputer.Domain
+            # if retrieved from WMI use as netbiosname
+            If($objComputer.Name)
+            {
+                $strNetBIOSComputerName = $objComputer.Name
+            }
+            # create netbios name from machine name input
+            else
+            {
+                $strNetBIOSComputerName = $strDNSComputerName.split(".")[0]
+            }
             $strLogicalProcessors = $objComputer.NumberOfLogicalProcessors
             $strPhysicalProcessors = $objComputer.NumberOfProcessors
             if ($null -eq $strLogicalProcessors)
@@ -384,34 +399,54 @@ try
         }
         catch
         {
-            LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing logical processors data from WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
+            LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieveing machine info from WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
         }
     
         try
         {
-          # Get the domain data. If computer is in a workgroup, it will catch exception.
-          $strDomainDN = DNDomainFromDNS $strDomainDNsName
+            if($strDomainDNSName)
+            {
+                # Get the domain data. If computer is part of domain
+                if($objComputer.PartOfDomain -eq $True) 
+                {
+                    $strDomainDN = DNDomainFromDNS $strDomainDNSName
+                    # Get forest name
+                    $strForestDnsName = ForestFromDomainDNS $strDomainDNSName
+                    # Get the site name
+                    $strSite = GetSiteFromComputerDNS $strDNSComputerName
+
+                }
+                else
+                {
+                    # Workgroup name
+                    $strNetBIOSDomain = $strDomainDNSName
+                }
+            }
+            else
+            {
+                LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "No domain DNS name information found in WMI data"
+            }
         }
         catch
         {
-          Write-Verbose -Message "Domain Data Exception caught for " + $strDomainDNsName
-          LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Domain Data Exception caught for " + $strDomainDNsName
+          LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error retrieving Domain information using: $strDomainDNSName"
         }
     
-        if ($strDomainDN -ne $null)
-        {
-          $strNetBIOSDomain = NetBIOSDomainFromDN
-        }
-    
+        # Adapter IP addresses
         $strIPAddresses = GetIPAddresses
 
-        $ADSISearcher = New-Object System.DirectoryServices.DirectorySearcher
-        $ADSISearcher.Filter = '(&(dnshostname=' + $strDNSComputerName + ')(name=' + $strNetBIOSComputerName + ')(objectClass=computer))'
-        $ADSISearcher.SearchScope = 'Subtree'
-        $Computer = $ADSISearcher.FindOne()
-        if($Computer)
+        # Only run on machines members of a domain
+        if($objComputer.PartOfDomain -eq $True)
         {
-            
+            $Computer = $Null
+            $ADSISearcher = New-Object System.DirectoryServices.DirectorySearcher
+            $ADSISearcher.Filter = '(&(dnshostname=' + $strDNSComputerName + ')(name=' + $strNetBIOSComputerName + ')(objectClass=computer))'
+            $ADSISearcher.SearchScope = 'Subtree'
+            $Computer = $ADSISearcher.FindOne()
+
+        }
+        if( !($Computer -eq $Null) )
+        {  
             if($Computer.Properties.Item('distinguishedName') -notlike "*OU=*") 
             {
                 $strComputerOU = $($Computer.Properties.Item('distinguishedName')).Substring($($Computer.Properties.Item('distinguishedName')).LastIndexOf('CN='))
@@ -424,75 +459,29 @@ try
         }
         else 
         {
-            LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Failed to retrieve computer object from active directory."
+            LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Failed to find matching computer object in Active Directory"
         }
-    }
 
+        # Set date for last script run
+        $strLastInventoryDate = Get-Date
+    }
     catch
     {
       LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Exception retrieving properties.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
     }
 
-    if((IsNullOrEmpty $strNetBIOSComputerName) -or (IsNullOrEmpty $strNetBIOSDomain))
-    {
-        # Try to parse the DNS name of the system
-        $arrNameSplit       = $strDNSComputerName.split(".")
-        if (IsNullOrEmpty $strNetBIOSComputerName -and ($arrNameSplit.length -gt 0))
-        {
-          $strNetBIOSComputerName = $arrNameSplit[0]
-        }
-        if ((IsNullOrEmpty $strNetBIOSDomain) -and ($arrNameSplit.length -gt 1))
-        {
-          $strNetBIOSDomain = $arrNameSplit[1]
-        }
-    
-        # If there is no DNS name (no '.') then this is a workgroup, so use the domain name from WMI as NetBIOS Domain
-        if ((IsNullOrEmpty $strNetBIOSDomain)  -and (-not (IsNullOrEmpty $strDomainDnsName)))
-        {
-          $strNetBIOSDomain = $strDomainDNsName;
-        }
-    }
-
-    if (IsNullOrEmpty $strDomainDnsName)
-    {
-        for($i = 1; $i -lt $arrNameSplit.length; $i++)
-        {
-            if (-not (IsNullOrEmpty $strDomainDnsName))
-            {
-                $strDomainDNsName = $strDomainDNsName + "."
-                $strDomainDNsName = $strDomainDNsName + $arrNameSplit[$i]
-            }
-            else
-            {
-                $strDomainDNsName = $arrNameSplit[$i]
-            }
-        }
-    }
-
-
-    # Get the forest if we have the Domain DNS name
-    if((IsNullOrEmpty $strForestDnsName) -and (-not (IsNullOrEmpty $strDomainDNsName)))
-    {
-        $strForestDnsName = ForestFromDomainDNS $strDomainDNsName
-    }
-
-    # Get the site name
-    if (IsNullOrEmpty $strSite)
-    {
-        $strSite = GetSiteFromComputerDNS $strDNSComputerName
-    }
-
-    Write-Verbose -Message "NetBIOS Computer Name:    $strNetBIOSComputerName"
-    Write-Verbose -Message "NetBIOS Domain Name:      $strNetBIOSDomain"
-    Write-Verbose -Message "Forest DNS Name:          $strForestDnsName"
-    Write-Verbose -Message "Domain DNS Name:          $strDomainDNsName"
-    Write-Verbose -Message "AD Site:                  $strSite"
-    Write-Verbose -Message "OU:                       $strComputerOU"
-    Write-Verbose -Message "IP Addresses:             $strIPAddresses"
-    Write-Verbose -Message "Logical Processors:       $strLogicalProcessors"
-    Write-Verbose -Message "Physical Processors:      $strPhysicalProcessors"
-    Write-Verbose -Message "Host Server Name:         $strHostServerName"
-    Write-Verbose -Message "Virtual Machine Name:     $strVirtualMachineName"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "NetBIOS Computer Name:    $strNetBIOSComputerName"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "NetBIOS Domain Name:      $strNetBIOSDomain"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Forest DNS Name:          $strForestDnsName"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Domain DNS Name:          $strDomainDNsName"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "AD Site:                  $strSite"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "OU:                       $strComputerOU"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "IP Addresses:             $strIPAddresses"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Logical Processors:       $strLogicalProcessors"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Physical Processors:      $strPhysicalProcessors"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Host Server Name:         $strHostServerName"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Virtual Machine Name:     $strVirtualMachineName"
+    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Last Inventory Date:      $($strLastInventoryDate.ToString())"
 
     $oInstance = $oDiscovery.CreateClassInstance("$MPElement[Name='Windows!Microsoft.Windows.Computer']$")
     AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/PrincipalName$" $ComputerIdentity
@@ -507,17 +496,16 @@ try
     AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/PhysicalProcessors$" $strPhysicalProcessors
     AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/HostServerName$" $strHostServerName
     AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/VirtualMachineName$" $strVirtualMachineName
+    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/LastInventoryDate$" $strLastInventoryDate
 
     $oDiscovery.AddInstance($oInstance)
     $oDiscovery
 }
-Catch 
+catch 
 {
     LogEvent -EventNr $EventId -EventType $EVENT_ERROR -LogMessage "Error running script.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG  `
-    -LogMessage "Debug:`n$($_.InvocationInfo.MyCommand.Name)`n$($_.ErrorDetails.Message)`n$($_.InvocationInfo.PositionMessage)`n$($_.CategoryInfo.ToString())`n$($_.FullyQualifiedErrorId)"
 }
-Finally 
+finally 
 {
     $Time.Stop()
     LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script has completed.`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
