@@ -117,9 +117,9 @@ if($EventType -le $LogLevel)
 function IsNullOrEmpty
 {
 Param(
-    [string]$str
+    [string]$StringInput
 )
-  return (($null -eq $str) -or (0 -eq $str.length))
+  return (($null -eq $StringInput) -or (0 -eq $StringInput.length))
 }
 
 #-----------------------------------------------------------
@@ -128,12 +128,12 @@ Param(
 function ForestFromDomainDNS
 {
 Param(
-    [string]$strDNSDomain
+    [string]$DNSDomain
 )
     $strForestDNS = $null
     try
     {
-        $query = "LDAP://$strDNSDomain/RootDSE"
+        $query = "LDAP://$DNSDomain/RootDSE"
         $objRootDSE = [System.DirectoryServices.DirectoryEntry]([ADSI]$query)
         $strForestDN = $objRootDSE.Get("rootdomainNamingContext")
         
@@ -271,21 +271,16 @@ function GetIPAddresses
 #-----------------------------------------------------------
 function GetSiteFromComputerDNS
 {
-Param(
-    [string]$strComputerDNS
-)
     $strSiteName = $null
 
     try
     {
-        $reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $strComputerDNS)
-        $regKey = $reg.OpenSubKey("System\\CurrentControlSet\\Services\\Netlogon\\Parameters")
-        $strSiteName = $regKey.GetValue("SiteName")
+        $strSiteName = (Get-Item -Path "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters" -ErrorAction SilentlyContinue).GetValue("SiteName")
 
         #If SiteName override is $null or empty, try DynamicSiteName
-        if(IsNullOrEmpty $strSiteName)
+        if(IsNullOrEmpty -StringInput $strSiteName)
         {
-          $strSiteName = $regKey.GetValue("DynamicSiteName")
+          $strSiteName = (Get-Item -Path "HKLM:\System\CurrentControlSet\Services\Netlogon\Parameters" -ErrorAction SilentlyContinue).GetValue("DynamicSiteName")
         }
     }
     catch
@@ -303,12 +298,12 @@ Param(
 function AddClassProperty
 {
 Param(
-    $oInstance, 
-    [string]$strProperty, 
-    [string]$strValue
+    $Instance, 
+    [string]$Property, 
+    [string]$Value
 )
-    if ($null -ne $strValue) {
-        $oInstance.AddProperty($strProperty, $strValue)
+    if ($null -ne $Value) {
+        $Instance.AddProperty($Property, $Value)
     }
 }
 
@@ -422,9 +417,9 @@ try
         # Get netbios domain name
         $strNetBIOSDomain = NetBIOSDomain
         # Get forest name
-        $strForestDnsName = ForestFromDomainDNS $strDomainDNSName
+        $strForestDnsName = ForestFromDomainDNS -DNSDomain $strDomainDNSName
         # Get the site name
-        $strSite = GetSiteFromComputerDNS $strDNSComputerName
+        $strSite = GetSiteFromComputerDNS
 
         $Computer = $Null
         $ADSISearcher = New-Object System.DirectoryServices.DirectorySearcher
@@ -449,25 +444,12 @@ try
         }
     }
 
-    # Adapter IP addresses
+    # Get connected adapter IP addresses
     $strIPAddresses = GetIPAddresses
 
     # Set date for last script run
     $strLastInventoryDate = Get-Date
-    <#
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "NetBIOS Computer Name:    $strNetBIOSComputerName"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "NetBIOS Domain Name:      $strNetBIOSDomain"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Forest DNS Name:          $strForestDnsName"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Domain DNS Name:          $strDomainDNsName"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "AD Site:                  $strSite"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "OU:                       $strComputerOU"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "IP Addresses:             $strIPAddresses"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Logical Processors:       $strLogicalProcessors"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Physical Processors:      $strPhysicalProcessors"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Host Server Name:         $strHostServerName"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Virtual Machine Name:     $strVirtualMachineName"
-    LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Last Inventory Date:      $($strLastInventoryDate.ToString())"
-    #>
+
     $DiscoveredValues = @"
 Discovered values:
 NetBIOS Computer Name: $strNetBIOSComputerName
@@ -475,6 +457,7 @@ NetBIOS Domain Name: $strNetBIOSDomain
 Forest DNS Name: $strForestDnsName
 Domain DNS Name: $strDomainDNsName
 AD Site: $strSite
+OU: $strComputerOU
 IP Addresses: $strIPAddresses
 Logical Processors:  $strLogicalProcessors
 Physical Processors: $strPhysicalProcessors
@@ -486,19 +469,19 @@ Last Inventory Date: $($strLastInventoryDate.ToString())
     LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage $DiscoveredValues
 
     $oInstance = $oDiscovery.CreateClassInstance("$MPElement[Name='Windows!Microsoft.Windows.Computer']$")
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/PrincipalName$" $ComputerIdentity
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/NetbiosComputerName$" $strNetBIOSComputerName
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/NetbiosDomainName$" $strNetBIOSDomain
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/ForestDnsName$" $strForestDnsName
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/DomainDnsName$" $strDomainDNsName
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/ActiveDirectorySite$" $strSite
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/OrganizationalUnit$" $strComputerOU
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/IPAddress$" $strIPAddresses
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/LogicalProcessors$" $strLogicalProcessors
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/PhysicalProcessors$" $strPhysicalProcessors
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/HostServerName$" $strHostServerName
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/VirtualMachineName$" $strVirtualMachineName
-    AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/LastInventoryDate$" $strLastInventoryDate
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/PrincipalName$" -Value $ComputerIdentity
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/NetbiosComputerName$" -Value $strNetBIOSComputerName
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/NetbiosDomainName$" -Value $strNetBIOSDomain
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/ForestDnsName$" -Value $strForestDnsName
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/DomainDnsName$" -Value $strDomainDNsName
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/ActiveDirectorySite$" -Value $strSite
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/OrganizationalUnit$" -Value $strComputerOU
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/IPAddress$" -Value $strIPAddresses
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/LogicalProcessors$" -Value $strLogicalProcessors
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/PhysicalProcessors$" -Value $strPhysicalProcessors
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/HostServerName$" -Value $strHostServerName
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/VirtualMachineName$" -Value $strVirtualMachineName
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/LastInventoryDate$" -Value $strLastInventoryDate
 
     $oDiscovery.AddInstance($oInstance)
 }
