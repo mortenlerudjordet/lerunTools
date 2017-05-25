@@ -10,7 +10,7 @@ param(
     $SourceId, 
     $ManagedEntityId, 
     $ComputerIdentity, 
-    [String]$LogLevelText = "Information"
+    [String]$LogLevelText = "CommandLine"
 )
 
     # For testing discovery manually in PowerShell console (not ISE):

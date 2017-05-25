@@ -1,4 +1,11 @@
-﻿Param($SourceType, $SourceId, $ManagedEntityId, $ComputerIdentity, $NetworkName)
+﻿Param(
+    $SourceType, 
+    $SourceId, 
+    $ManagedEntityId, 
+    $ComputerIdentity, 
+    $NetworkName,
+    [String]$LogLevelText = "CommandLine"
+)
 
 # For testing discovery manually in PowerShell console (not ISE):
 # $SourceType = 0
@@ -6,9 +13,6 @@
 # $ManagedEntityId = '{00000000-0000-0000-0000-000000000000}'
 # $ComputerIdentity = 'servername.domainname.domain'
 # $NetworkName = 'servername'
-
-# For running script in a console change value to CommandLine
-$LogLevelText = "Information"
 
 #==================================================================================
 # Func:		LogEvent
