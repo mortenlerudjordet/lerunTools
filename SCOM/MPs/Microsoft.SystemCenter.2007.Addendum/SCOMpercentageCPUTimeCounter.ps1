@@ -480,5 +480,5 @@ Finally
     }
 
     $Time.Stop()
-    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Script Finished.`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
+    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Script done.`nRun Time: $([string]::Format('{0:N}',$Time.Elapsed.TotalSeconds)) second(s)"
 }

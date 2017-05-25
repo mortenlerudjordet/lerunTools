@@ -271,5 +271,5 @@ Finally
         $discoveryData
     } 
     $Time.Stop()
-	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script Finished`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
+	LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script done.`nRun Time: $([string]::Format('{0:N}',$Time.Elapsed.TotalSeconds)) second(s)"
 }

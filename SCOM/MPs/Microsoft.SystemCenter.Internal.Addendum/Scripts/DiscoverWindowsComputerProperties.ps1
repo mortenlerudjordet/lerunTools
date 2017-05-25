@@ -500,5 +500,5 @@ finally
         $oDiscovery
     }    
     $Time.Stop()
-    LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script has completed.`nRun Time: $($Time.Elapsed.TotalSeconds) second(s)"
+    LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Script done.`nRun Time: $([string]::Format('{0:N}',$Time.Elapsed.TotalSeconds)) second(s)"
 }
