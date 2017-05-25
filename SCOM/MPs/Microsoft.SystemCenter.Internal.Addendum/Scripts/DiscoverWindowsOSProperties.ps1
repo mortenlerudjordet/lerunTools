@@ -7,8 +7,8 @@
 # $ComputerIdentity = 'servername.domainname.domain'
 # $NetworkName = 'servername'
 
-# Hardcoded
-$LogLevelText = "CommandLine"
+# For running script in a console change value to CommandLine
+$LogLevelText = "Information"
 
 #==================================================================================
 # Func:		LogEvent

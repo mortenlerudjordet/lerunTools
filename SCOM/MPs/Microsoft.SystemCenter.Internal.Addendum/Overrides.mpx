@@ -1,12 +1,15 @@
 ﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Monitoring>
     <Overrides>
-      <DiscoveryPropertyOverride ID="Microsoft.SystemCenter.DiscoverWindowsComputerProperties.DisableOriginalDiscovery" Context="Windows!Microsoft.Windows.Computer" Enforced="false" Discovery="Core!Microsoft.SystemCenter.DiscoverWindowsComputerProperties" Property="Enabled">
+        <DiscoveryPropertyOverride ID="Microsoft.SystemCenter.DiscoverWindowsComputerProperties.DisableOriginalDiscovery" Context="Windows!Microsoft.Windows.Computer" Enforced="false" Discovery="Core!Microsoft.SystemCenter.DiscoverWindowsComputerProperties" Property="Enabled">
         <Value>false</Value>
-      </DiscoveryPropertyOverride>
-      <DiscoveryPropertyOverride ID="Microsoft.SystemCenter.DiscoverWindowsOSProperties.DisableOriginalDiscovery" Context="Windows!Microsoft.Windows.Computer" Enforced="false" Discovery="Core!Microsoft.SystemCenter.DiscoverWindowsOSProperties" Property="Enabled">
+        </DiscoveryPropertyOverride>
+        <DiscoveryPropertyOverride ID="Microsoft.SystemCenter.DiscoverWindowsOSProperties.DisableOriginalDiscovery" Context="Windows!Microsoft.Windows.Computer" Enforced="false" Discovery="Core!Microsoft.SystemCenter.DiscoverWindowsOSProperties" Property="Enabled">
         <Value>false</Value>
-      </DiscoveryPropertyOverride>
+        </DiscoveryPropertyOverride>
+        <DiscoveryPropertyOverride ID="Microsoft.SystemCenter.DiscoverIsVirtualMachineTrue.DisableOriginalDiscovery" Context="Windows!Microsoft.Windows.Computer" Enforced="false" Discovery="Core!Microsoft.SystemCenter.DiscoverIsVirtualMachineTrue" Property="Enabled">
+            <Value>false</Value>
+        </DiscoveryPropertyOverride>        
     </Overrides>
   </Monitoring>
 </ManagementPackFragment>

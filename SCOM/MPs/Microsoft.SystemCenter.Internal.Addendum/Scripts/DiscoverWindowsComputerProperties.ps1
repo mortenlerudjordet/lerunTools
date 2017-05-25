@@ -356,15 +356,15 @@ $oAPI = new-object -comobject "MOM.ScriptAPI"
 
 LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Starting script. Running as: $(whoami)"
 $oDiscovery = $oAPI.CreateDiscoveryData($SourceType, $SourceId, $ManagedEntityId);
-# Get the virtual machine information
-$reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $strDNSComputerName)
-$regKey = $reg.OpenSubKey("SOFTWARE\\Microsoft\\Virtual Machine\\Guest\\Parameters")
-$strHostServerName = $regKey.GetValue("HostName")
+
+
+# TODO : ADD Logic to check if machine is a virutal machine and have it work for both Hyper-V and VmWare
+
+# Get the virtual machine host information
+$strHostServerName = (Get-Item -Path "HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters" -ErrorAction SilentlyContinue).GetValue("HostName")
 
 # Will only discover if VM is running on Hyper-V
-$reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $strDNSComputerName)
-$regKey = $reg.OpenSubKey("SOFTWARE\\Microsoft\\Virtual Machine\\Guest\\Parameters")
-$strVirtualMachineName = $regKey.GetValue("VirtualMachineName")
+$strVirtualMachineName = (Get-Item -Path "HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters" -ErrorAction SilentlyContinue).GetValue("VirtualMachineName")
 
 try
 {    
@@ -454,7 +454,7 @@ try
 
     # Set date for last script run
     $strLastInventoryDate = Get-Date
-
+    <#
     LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "NetBIOS Computer Name:    $strNetBIOSComputerName"
     LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "NetBIOS Domain Name:      $strNetBIOSDomain"
     LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Forest DNS Name:          $strForestDnsName"
@@ -467,6 +467,23 @@ try
     LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Host Server Name:         $strHostServerName"
     LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Virtual Machine Name:     $strVirtualMachineName"
     LogEvent -EventNr $EventId -EventType $EVENT_DEBUG -LogMessage  "Last Inventory Date:      $($strLastInventoryDate.ToString())"
+    #>
+    $DiscoveredValues = @"
+Discovered values:
+NetBIOS Computer Name: $strNetBIOSComputerName
+NetBIOS Domain Name: $strNetBIOSDomain
+Forest DNS Name: $strForestDnsName
+Domain DNS Name: $strDomainDNsName
+AD Site: $strSite
+IP Addresses: $strIPAddresses
+Logical Processors:  $strLogicalProcessors
+Physical Processors: $strPhysicalProcessors
+Host Server Name: $strHostServerName
+Virtual Machine Name: $strVirtualMachineName
+Last Inventory Date: $($strLastInventoryDate.ToString())
+"@
+
+    LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage $DiscoveredValues
 
     $oInstance = $oDiscovery.CreateClassInstance("$MPElement[Name='Windows!Microsoft.Windows.Computer']$")
     AddClassProperty $oInstance "$MPElement[Name='Windows!Microsoft.Windows.Computer']/PrincipalName$" $ComputerIdentity
