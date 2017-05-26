@@ -151,7 +151,7 @@ try
         {
             try
             {
-                items = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ErrorAction Stop
+                $items = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_OperatingSystem" -Property $properties -ErrorAction Stop
             }
             catch
             {

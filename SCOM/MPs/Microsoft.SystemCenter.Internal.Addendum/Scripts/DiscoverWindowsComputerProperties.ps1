@@ -32,6 +32,7 @@ param(
     $strPhysicalProcessors  = $null
     $strHostServerName      = $null
     $strVirtualMachineName  = $null
+    $IsVirtualMachine       = $False
 
 #==================================================================================
 # Func:		LogEvent
@@ -46,69 +47,69 @@ Param(
     [String]$LogMessage
 )
 
-if($LogLevelText -ne "CommandLine") 
-{
-    $LogMessage = "`n" + $LogMessage
-}
-
-if($EventType -le $LogLevel)
-{
-    Switch($EventType)
+    if($LogLevelText -ne "CommandLine") 
     {
-        1 {
-            if($LogLevelText -eq "CommandLine") 
-            {
-                # Run from command line and log to screen
-                Write-Verbose -Message $LogMessage
-            }
-            else
-            {
-                # Error
-                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
-            }
-
-        }
-        2 {
-            if($LogLevelText -eq "CommandLine") 
-            {
-                # Run from command line and log to screen
-                Write-Verbose -Message $LogMessage
-            }
-            else
-            {
-                # Warning
-                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
-            }
-
-        }
-        4 {
-            if($LogLevelText -eq "CommandLine") 
-            {
-                # Run from command line and log to screen
-                Write-Verbose -Message $LogMessage
-            }
-            else
-            {
-                # Information
-                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
-            }
-    
-        }
-        5 {
-            if($LogLevelText -eq "CommandLine") 
-            {
-                # Run from command line and log to screen
-                Write-Verbose -Message $LogMessage
-            }
-            else
-            {
-                # Debug
-                $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
-            }
-    
-        }	
+        $LogMessage = "`n" + $LogMessage
     }
-}
+
+    if($EventType -le $LogLevel)
+    {
+        Switch($EventType)
+        {
+            1 {
+                if($LogLevelText -eq "CommandLine") 
+                {
+                    # Run from command line and log to screen
+                    Write-Verbose -Message $LogMessage
+                }
+                else
+                {
+                    # Error
+                    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,1,$LogMessage)	
+                }
+
+            }
+            2 {
+                if($LogLevelText -eq "CommandLine") 
+                {
+                    # Run from command line and log to screen
+                    Write-Verbose -Message $LogMessage
+                }
+                else
+                {
+                    # Warning
+                    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,2,$LogMessage)	
+                }
+
+            }
+            4 {
+                if($LogLevelText -eq "CommandLine") 
+                {
+                    # Run from command line and log to screen
+                    Write-Verbose -Message $LogMessage
+                }
+                else
+                {
+                    # Information
+                    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+                }
+    
+            }
+            5 {
+                if($LogLevelText -eq "CommandLine") 
+                {
+                    # Run from command line and log to screen
+                    Write-Verbose -Message $LogMessage
+                }
+                else
+                {
+                    # Debug
+                    $oAPI.LogScriptEvent($SCRIPT_NAME,$EventNr,0,$LogMessage)
+                }
+    
+            }	
+        }
+    }
 }
 
 #--------------------------------------------------------------
@@ -352,15 +353,6 @@ $oAPI = new-object -comobject "MOM.ScriptAPI"
 LogEvent -EventNr $EventId -EventType $EVENT_INFO -LogMessage "Starting script. Running as: $(whoami)"
 $oDiscovery = $oAPI.CreateDiscoveryData($SourceType, $SourceId, $ManagedEntityId);
 
-
-# TODO : ADD Logic to check if machine is a virutal machine and have it work for both Hyper-V and VmWare
-
-# Get the virtual machine host information
-$strHostServerName = (Get-Item -Path "HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters" -ErrorAction SilentlyContinue).GetValue("HostName")
-
-# Will only discover if VM is running on Hyper-V
-$strVirtualMachineName = (Get-Item -Path "HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters" -ErrorAction SilentlyContinue).GetValue("VirtualMachineName")
-
 try
 {    
     # Get the computer from the system
@@ -369,14 +361,14 @@ try
 
     try
     {	
-        $query = "Select Domain, Name, NumberOfLogicalProcessors, NumberOfProcessors, PartOfDomain from Win32_ComputerSystem"
+        $query = "Select Domain, Name, NumberOfLogicalProcessors, NumberOfProcessors, PartOfDomain, Model, Manufacturer from Win32_ComputerSystem"
         $objComputer = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
     }
     catch
     {
         try
         {
-			Import-Module -Name cimcmdlets -ErrorAction Stop
+            Import-Module -Name cimcmdlets -ErrorAction Stop
             $objComputer = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
         }
         catch
@@ -410,6 +402,38 @@ try
         $strLogicalProcessors = $objComputer.NumberOfProcessors
         $strPhysicalProcessors = $null
     }
+
+    # Is VmWare VM  
+    if($objComputer.Model -eq "VMware Virtual Platform")
+    {
+        $IsVirtualMachine = $True
+        $strHostServerName = $objComputer.Manufacturer
+        $strVirtualMachineName = $objComputer.Model
+    }
+    # Is Hyper-V VM
+    elseif($objComputer.Model -eq "Virtual Machine")
+    {
+        
+        # Get the virtual machine host information
+        $strHostServerName = (Get-Item -Path "HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters" -ErrorAction SilentlyContinue).GetValue("HostName")
+        # Will only discover if VM is running on Hyper-V
+        $strVirtualMachineName = (Get-Item -Path "HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters" -ErrorAction SilentlyContinue).GetValue("VirtualMachineName")
+
+        $IsVirtualMachine = $True
+    }
+    # Is Oracle VM
+    elseif($objComputer.Model -eq "VirtualBox") 
+    {
+        $strHostServerName = $objComputer.Manufacturer
+        $strVirtualMachineName = $objComputer.Model
+        $IsVirtualMachine = $True
+    }
+    # Is no VM
+    else 
+    {
+        $IsVirtualMachine = $False
+    }
+
 
     # Get the domain information. If computer is part of domain
     if($objComputer.PartOfDomain -eq $True) 
@@ -463,6 +487,7 @@ Logical Processors:  $strLogicalProcessors
 Physical Processors: $strPhysicalProcessors
 Host Server Name: $strHostServerName
 Virtual Machine Name: $strVirtualMachineName
+Virtual Machine: $IsVirtualMachine
 Last Inventory Date: $($strLastInventoryDate.ToString())
 "@
 
@@ -481,6 +506,7 @@ Last Inventory Date: $($strLastInventoryDate.ToString())
     AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/PhysicalProcessors$" -Value $strPhysicalProcessors
     AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/HostServerName$" -Value $strHostServerName
     AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/VirtualMachineName$" -Value $strVirtualMachineName
+    AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/IsVirtualMachine$" -Value $IsVirtualMachine
     AddClassProperty -Instance $oInstance -Property "$MPElement[Name='Windows!Microsoft.Windows.Computer']/LastInventoryDate$" -Value $strLastInventoryDate
 
     $oDiscovery.AddInstance($oInstance)
