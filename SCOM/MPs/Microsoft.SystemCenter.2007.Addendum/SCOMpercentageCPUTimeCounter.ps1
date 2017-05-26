@@ -9,6 +9,11 @@
 # 1 - RunAsDiagnostic
 # 2 - ProcessIterationCount
 
+# For testing discovery manually in PowerShell console (not ISE):
+# $ComputerName = 'servername.domainname.domain'
+# ProcessIterationCount = 3   
+# Output diagnostics $ConfigForRun = "True" (string)
+
 #Event log variables
 $SCRIPT_EVENT_ID     = 3000
 $CN_SCOM_SUCCESS     = 0
@@ -17,28 +22,6 @@ $CN_SCOM_WARNING     = 2
 $CN_SCOM_INFORMATION = 4
 $CN_SCOM_DEBUG       = 5
 $SCRIPT_NAME		 = "SCOMPercentageCPUTimeCounter.ps1"
-
-#OS version for Win 2012
-$WIN_OS_2012_Ver = "6.2"
-$OSRegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\"
-
-#******************************************************************************
-#   FUNCTION:       CheckMinOSVer
-#   DESCRIPTION:    Returns True if the Registry Key for CurrentVersion
-#                   is equal or Higher than the Minimum OS Versions Number.
-#   PARAMETER:      DblMinVer Minimum Version Number to use
-#   RETURNS:        Boolean: True, if build is greater or equal than the given number
-#******************************************************************************
-function CheckByOSCurrentVersion() #As Boolean
-{
-    $strCurrentOSVer = Get-ItemProperty $OSRegistryKey
-    $strCurrentOSVer = $strCurrentOSVer.CurrentVersion
-    if($strCurrentOSVer -ge $WIN_OS_2012_Ver)
-    {
-        return $true;
-    }
-    return $false;
-}
 
 #==================================================================================
 # Func:		LogEvent
@@ -118,8 +101,11 @@ if($EventType -le $LogLevel)
 }
 
 
-function GetProcessorTime ($procId, $ComputerName)
+function GetProcessorTime
 {
+Param(
+    $procId
+)
 
 $N1 = 0
 $D1 = 0
@@ -129,22 +115,26 @@ $Nd = 0
 $Dd = 0
     $PercentProcessorTime   = 0
     $query = "Select * from Win32_PerfRawData_PerfProc_Process where IDProcess = ""$procId"""
-    if($isHigherThanWin08 -eq $true)
+
+    try
+    {			
+        # Use COM instead if all WinRM connection attempts fail
+        $objService1 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+    }
+    catch
     {
-        Try
-        {			
-            # Use COM instead if all WinRM connection attempts fail
-            $objService1 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+        try
+        {
+            $objService1 = Get-WMIObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop
         }
-        Catch
+        catch
         {
             # Log unhandeled execption
             LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive performance data through WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
         }
+           
     }
-    else{
-        $objService1 = Get-WMIObject -Namespace "root\cimv2" -Query $query
-    }
+
     ForEach($objInstance1 in $objService1)
     {
         $N1 = $objInstance1.PercentProcessorTime
@@ -152,22 +142,25 @@ $Dd = 0
     }
 
    Start-Sleep 1
-   if($isHigherThanWin08 -eq $true)
-   {
+
+    try
+    {
+        LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI 2nd round of raw performance data"
+        # Use COM instead if all WinRM connection attempts fail
+        $objService2 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+    }
+    catch
+    {
         try
         {
-            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI 2nd round of raw performance data"
-            # Use COM instead if all WinRM connection attempts fail
-            $objService2 = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+            $objService2 = Get-WMIObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop
         }
         catch
         {
             # Log unhandeled execption
             LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive second round of performance data.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
         }
-    }
-    else{
-        $objService2 = Get-WMIObject -Namespace "root\cimv2" -Query $query
+            
     }
     ForEach($objInstance2 in $objService2)
     {
@@ -227,12 +220,20 @@ Write-EventLog -EventId $SCRIPT_EVENT_ID -LogName 'Operations Manager' -Source '
 
 Try 
 {
-    #Check the OS version
-    $isHigherThanWin08 = CheckByOSCurrentVersion
-
     #Create PropertyBag object
     $oAPI = new-object -comObject "MOM.ScriptAPI"
-    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Starting script. Running as: $(whoami)"
+
+    # $ConfigForRun is string even if defined as bool in probe
+    if($ConfigForRun -eq "true")
+    {
+        $Diagnostic = $True
+    }
+    else
+    {
+        $Diagnostic = $False
+    }
+
+    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_INFORMATION -LogMessage "Starting script. Running as: $(whoami)`nDiagnostic mode: $Diagnostic"
 
     $oPropertyBag = $oAPI.CreatePropertyBag()
 
@@ -244,29 +245,31 @@ Try
     $finalPercentProcessorTime = 0
     $procCount = 0
     $checker = $null
-    if($isHigherThanWin08 -eq $true)
-    {
-        try{
-            # Check if CIM methods are loaded
-            if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) )
-            {
-                # Stop if one cannot use Get-CimInstance CMDlet
-                Import-Module -Name cimcmdlets -ErrorAction Stop
-            }
 
-            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI data"
-            # Use COM instead if all WinRM connection attempts fail
-            $checker = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_Process" -ErrorAction Stop
+    try{
+        # Check if CIM methods are loaded
+        if(! (Get-Module -Name cimcmdlets -ErrorAction SilentlyContinue) )
+        {
+            # Stop if one cannot use Get-CimInstance CMDlet
+            Import-Module -Name cimcmdlets -ErrorAction Stop
+        }
+
+        LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get WMI data"
+        # Use COM instead if all WinRM connection attempts fail
+        $checker = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_Process" -ErrorAction Stop
+    }
+    catch
+    {
+        try
+        {
+            $checker = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_Process" -ErrorAction Stop
         }
         catch
         {
             # Log unhandeled execption
             LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive data through WMI.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
         }
-    }
-    else
-    {
-        $checker = Get-WMIObject -Namespace "root\cimv2" -Class "Win32_Process"
+
     }
 
     if($checker -ne $null)
@@ -275,22 +278,23 @@ Try
         for($counter=0;$counter -lt $retryAttempts;$counter++)
         {
             # Get the number of cores in the system
-            if($isHigherThanWin08 -eq $true)
+            try 
             {
-                try 
+                LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get number of CPU cores data"
+                # Use COM to get WMI data
+                $processorList = Get-CimInstance -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction Stop
+            }
+            catch 
+            {
+                try
                 {
-                    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get number of CPU cores data"
-                    # Use COM to get WMI data
-                    $processorList = Get-CimInstance -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction Stop
+                    $processorList = Get-WMIObject -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction Stop
                 }
-                catch 
+                catch
                 {
                     LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive number of CPUs.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
                 }
-            }
-            else
-            {
-                $processorList = Get-WMIObject -Namespace "root\cimv2" -Query "SELECT NumberOfCores FROM Win32_Processor" -ErrorAction stop
+                    
             }
             if($processorList -ne $null)
             {
@@ -323,24 +327,27 @@ Try
             # Step 1: Get all SCOM Processes
             for($counter=0; $counter -lt $retryAttempts; $counter++)
             {
-                if($isHigherThanWin08 -eq $true)
+
+                try
+                {
+                    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get ProcessId, ParentProcessId data"
+                    # Use COM 
+                    $processes = Get-CimInstance -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction Stop
+
+                }
+                catch 
                 {
                     try
                     {
-                        LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get ProcessId, ParentProcessId data"
-                        # Use COM 
-                        $processes = Get-CimInstance -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction Stop
-
+                        $processes = Get-WMIObject -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction stop
                     }
-                    catch 
+                    catch
                     {
                         LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive processes.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
                     }
+                        
                 }
-                else
-                {
-                    $processes = Get-WMIObject -Namespace "root\cimv2" -Query 'SELECT ProcessId,ParentProcessId,Name FROM Win32_Process' -ErrorAction stop
-                }
+
                 if($processes -ne $null)
                 {
                     LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Number of active processes found: $($processes.Count).`nStarting search for the ones related to HealthService"
@@ -383,23 +390,26 @@ Try
                     While($childFound -eq $true)
 
                     # Step 4: Get the total cpu percentage used for all the SCOM processes
-                    if($isHigherThanWin08 -eq $true)
+
+                    try
+                    {
+                        LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get performance counter data"
+                        # Use COM 
+                        $wmiService = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction Stop
+                    }
+                    catch
                     {
                         try
                         {
-                            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get performance counter data"
-                            # Use COM 
-                            $wmiService = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction Stop
+                            $wmiService =  Get-WMIObject -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction Stop
                         }
                         catch
                         {
                             LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive performance counters.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
                         }
+                            
                     }
-                    else
-                    {
-                        $wmiService =  Get-WMIObject -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process"
-                    }
+
                     $totalPercentProcessorTime = 0
 
 
@@ -408,11 +418,11 @@ Try
                     {
                         if($agentProcIDs.Contains($("|" + $process.IDProcess + "|")))
                         {
-                            $x = $(GetProcessorTime $process.IDProcess $ComputerName)
+                            $x = $(GetProcessorTime -ProcID $process.IDProcess)
                             $totalPercentProcessorTime = $totalPercentProcessorTime + $x
-                            if($ConfigForRun -eq $true)
+                            if($Diagnostic-eq $true)
                             {
-                                $procTime = $(GetProcessorTime $process.IDProcess $ComputerName)
+                                $procTime = $(GetProcessorTime -ProcID $process.IDProcess)
                                 $sampleCount = $sampleCount + 1
                                 $procTime = [double]$procTime
                                 $totalCount = $totalCount + $procTime
@@ -442,7 +452,7 @@ Try
             Start-Sleep 3
         }
         # Add the detailed analysis to the property bag
-        if($ConfigForRun -eq $true)
+        if($Diagnostic -eq $true)
         {
             $oPropertyBag.AddValue("SamplesTaken", $ProcessIterationCount)
             $oPropertyBag.AddValue("Average", [double]($totalCount/$sampleCount))
@@ -457,7 +467,7 @@ Try
         $finalPercentProcessorTime = ($finalPercentProcessorTime/$dataCount)/$procCount
     }
 
-    if($ConfigForRun -eq $false)
+    if($Diagnostic -eq $false)
     {
         $oPropertyBag.AddValue("SCOMpercentageCPUTime", $finalPercentProcessorTime)
     }
