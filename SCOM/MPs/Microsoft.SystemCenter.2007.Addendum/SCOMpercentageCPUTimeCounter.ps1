@@ -475,8 +475,6 @@ Try
 Catch 
 {
     LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Error running script.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-    LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG   `
-    -LogMessage "Debug:`n$($_.InvocationInfo.MyCommand.Name)`n$($_.ErrorDetails.Message)`n$($_.InvocationInfo.PositionMessage)`n$($_.CategoryInfo.ToString())`n$($_.FullyQualifiedErrorId)"
 }
 Finally
 {
