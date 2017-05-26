@@ -175,7 +175,23 @@ function NetBIOSDomain
     {
         try
         {
-            $ntDomain = Get-WmiObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop  | Select-Object -ExpandProperty DomainName
+            $wmiObjects = Get-WmiObject -Namespace "root\cimv2" -Query $query -ErrorAction Stop
+
+            If($wmiObjects -is [System.Array]) 
+            {
+                ForEach($wmiObject in $wmiObjects)
+                {
+                    if($wmiObject.DomainName -ne $Null)
+                    {
+                        $ntDomain = $wmiObject.DomainName
+                    }
+                }
+            }
+            else
+            {
+                $ntDomain = $ntDomain | Select-Object -ExpandProperty DomainName
+            }
+              
         }
         catch 
         {
