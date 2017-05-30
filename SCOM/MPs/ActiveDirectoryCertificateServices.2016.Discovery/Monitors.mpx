@@ -1,0 +1,46 @@
+﻿<ManagementPackFragment SchemaVersion="2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <Monitoring>
+        <Monitors>
+            <UnitMonitor ID="Microsoft.Windows.CertificateServices.Service.Monitor" Accessibility="Public" Enabled="true" Target="ClusLibrary!Microsoft.Windows.Cluster.Monitoring.Service" ParentMonitorID="Health!System.Health.AvailabilityState" Remotable="true" Priority="Normal" TypeID="Microsoft.Windows.CertificateServices.CheckServiceState" ConfirmDelivery="true">
+                <Category>AvailabilityHealth</Category>
+                <AlertSettings AlertMessage="Microsoft.Windows.Cluster.Service.Monitor.AlertMessage">
+                    <AlertOnState>Error</AlertOnState>
+                    <AutoResolve>true</AutoResolve>
+                    <AlertPriority>Low</AlertPriority>
+                    <AlertSeverity>Error</AlertSeverity>
+                    <AlertParameters>
+                        <AlertParameter1>$Target/Host/Property[Type="Windows!Microsoft.Windows.Computer"]/PrincipalName$</AlertParameter1>
+                    </AlertParameters>
+                </AlertSettings>
+                <OperationalStates>
+                    <OperationalState ID="Success" MonitorTypeStateID="Running" HealthState="Success" />
+                    <OperationalState ID="Error" MonitorTypeStateID="NotRunning" HealthState="Error" />
+                </OperationalStates>
+                <Configuration>
+                    <ServiceName>Certsvc</ServiceName>
+                    <Frequency>120</Frequency>
+                </Configuration>
+            </UnitMonitor>
+        </Monitors>
+    </Monitoring>
+    <LanguagePacks>
+        <LanguagePack ID="ENU" IsDefault="true">
+            <DisplayStrings>
+                <DisplayString ElementID="Microsoft.Windows.CertificateServices.Service.Monitor">
+                    <Name>Certificate service status</Name>
+                    <Description>Monitors the health of the Certificate service</Description>
+                </DisplayString>
+                <DisplayString ElementID="Microsoft.Windows.CertificateServices.Monitor" SubElementID="Error">
+                    <Name>Certificate Service is not running</Name>
+                </DisplayString>
+                <DisplayString ElementID="Microsoft.Windows.CertificateServices.Monitor" SubElementID="Success">
+                    <Name>Certificate Service is running</Name>
+                </DisplayString>
+                <DisplayString ElementID="Microsoft.Windows.CertificateServices.AlertMessage">
+                    <Name>Certificate Service stopped</Name>
+                    <Description>The Certificate service on {0} is not running. This node will not participate in the cluster until the cluster service is started.</Description>
+                </DisplayString>
+            </DisplayStrings>
+        </LanguagePack>
+    </LanguagePacks>
+</ManagementPackFragment>
