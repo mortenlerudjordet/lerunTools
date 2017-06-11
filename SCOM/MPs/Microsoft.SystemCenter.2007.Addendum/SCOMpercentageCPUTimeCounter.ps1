@@ -358,7 +358,7 @@ Try
                     {
                         if(($process -ne $null) -and ($process.GetType().Name -ne "Nothing"))
                         {
-                            if(($process.Name.contains("HealthService") -Or $process.Name.contains("MonitoringHost")) -And (-Not($agentProcIDs.contains($("|" + $process.ProcessId + "|")))))
+                            if(($process.Name.Equals("HealthService.exe") -Or $process.Name.Equals("MonitoringHost.exe")) -And (-Not($agentProcIDs.contains($("|" + $process.ProcessId + "|")))))
                             {
                                 $agentProcIDs = $($agentProcIDs + $process.ProcessId + "|")
                             }
