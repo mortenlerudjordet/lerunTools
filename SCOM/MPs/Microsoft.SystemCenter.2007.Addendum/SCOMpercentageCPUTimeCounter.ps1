@@ -114,7 +114,7 @@ $D2 = 0
 $Nd = 0
 $Dd = 0
     $PercentProcessorTime   = 0
-    $query = "Select * from Win32_PerfRawData_PerfProc_Process where IDProcess = ""$procId"""
+    $query = "Select Name,PercentProcessorTime,TimeStamp_Sys100NS from Win32_PerfRawData_PerfProc_Process where IDProcess = ""$procId"""
 
     try
     {
@@ -325,7 +325,7 @@ Try
         # Get the total processor time count ProcessIterationCount number of times, to get the average
         for($loopCounter=0; $loopCounter -lt $ProcessIterationCount; $loopCounter++)
         {
-            $agentProcIDs = "|"
+            $agentProcIDs = New-Object 'System.Collections.Generic.List[Int]'
             # Step 1: Get all SCOM Processes
             for($counter=0; $counter -lt $retryAttempts; $counter++)
             {
@@ -358,9 +358,9 @@ Try
                     {
                         if(($process -ne $null) -and ($process.GetType().Name -ne "Nothing"))
                         {
-                            if(($process.Name.Equals("HealthService.exe") -Or $process.Name.Equals("MonitoringHost.exe")) -And (-Not($agentProcIDs.contains($("|" + $process.ProcessId + "|")))))
+                            if(($process.Name.Equals("HealthService.exe") -Or $process.Name.Equals("MonitoringHost.exe")) -And (-Not($agentProcIDs.contains($process.ProcessId))))
                             {
-                                $agentProcIDs = $($agentProcIDs + $process.ProcessId + "|")
+                                $Null = $agentProcIDs.Add($process.ProcessId)
                             }
                         }
                     }
@@ -380,9 +380,9 @@ Try
                                 # Filter out myself
                                 if($process.ProcessId -ne $pid)
                                 {
-                                    if($agentProcIDs.contains($("|" + $process.ParentProcessId + "|")) -And (-Not($agentProcIDs.contains($("|" + $process.ProcessId + "|")))))
+                                    if($agentProcIDs.contains($process.ParentProcessId) -And (-Not($agentProcIDs.contains($process.ProcessId))))
                                     {
-                                        $agentProcIDs = $($agentProcIDs + $process.ProcessId + "|")
+                                        $Null = $agentProcIDs.Add($process.ProcessId)
                                         $childFound = $true
                                     }
                                 }
@@ -393,38 +393,17 @@ Try
 
                     # Step 4: Get the total cpu percentage used for all the SCOM processes
 
-                    try
-                    {
-                        LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_DEBUG -LogMessage "Using COM to get performance counter data"
-                        # Use COM
-                        $wmiService = Get-CimInstance -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction Stop
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            $wmiService =  Get-WMIObject -Namespace "root\cimv2" -Class "Win32_PerfFormattedData_PerfProc_Process" -ErrorAction Stop
-                        }
-                        catch
-                        {
-                            LogEvent -EventNr $SCRIPT_EVENT_ID -EventType $CN_SCOM_ERROR -LogMessage "Could not retrive performance counters.`n$($_.Exception.Message)`n$($_.InvocationInfo.PositionMessage)"
-                        }
-
-                    }
-
                     $totalPercentProcessorTime = 0
 
-
-                    # Iterate each process to add the percent processor time to the to
-                    foreach($process in $wmiService)
+                    # Only iterate through processes hosted by SCOM agent
+                    foreach($processID in $agentProcIDs)
                     {
-                        if($agentProcIDs.Contains($("|" + $process.IDProcess + "|")))
-                        {
-                            $x = $(GetProcessorTime -ProcID $process.IDProcess)
+
+                            $x = $(GetProcessorTime -ProcID $processID)
                             $totalPercentProcessorTime = $totalPercentProcessorTime + $x
                             if($Diagnostic-eq $true)
                             {
-                                $procTime = $(GetProcessorTime -ProcID $process.IDProcess)
+                                $procTime = $(GetProcessorTime -ProcID $processID)
                                 $sampleCount = $sampleCount + 1
                                 $procTime = [double]$procTime
                                 $totalCount = $totalCount + $procTime
@@ -440,7 +419,6 @@ Try
                                     $max = $procTime
                                 }
                             }
-                        }
                     }
 
                     # Add the total percentage time to the final percentage time for averaging in the end
