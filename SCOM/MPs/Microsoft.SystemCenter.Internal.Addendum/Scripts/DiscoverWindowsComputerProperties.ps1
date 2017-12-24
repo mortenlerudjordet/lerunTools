@@ -165,11 +165,11 @@ Param(
 #-----------------------------------------------------------
 function NetBIOSDomain
 {
-    $query = "Select DomainName from Win32_NTDomain"
+    $query = "select domain from win32_computersystem"
 
     try
     {
-        $ntDomain = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop | Select-Object -ExpandProperty DomainName
+        $ntDomain = Get-CimInstance -Namespace "root\cimv2" -Query $query -ErrorAction Stop | Select-Object -ExpandProperty Domain
     }
     catch
     {
@@ -181,15 +181,15 @@ function NetBIOSDomain
             {
                 ForEach($wmiObject in $wmiObjects)
                 {
-                    if($wmiObject.DomainName -ne $Null)
+                    if($wmiObject.Domain -ne $Null)
                     {
-                        $ntDomain = $wmiObject.DomainName
+                        $ntDomain = $wmiObject.Domain
                     }
                 }
             }
             else
             {
-                $ntDomain = $ntDomain | Select-Object -ExpandProperty DomainName
+                $ntDomain = $wmiObjects | Select-Object -ExpandProperty Domain
             }
               
         }
